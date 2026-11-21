@@ -12,6 +12,7 @@ package config
 import (
 	"net/netip"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -29,6 +30,9 @@ type Config struct {
 	DBRuntimeRole       string
 	DBRequireSplitRoles bool
 	MigrateOnStart      bool
+	// DatabaseMaxConns is the serving connection pool's size
+	// (DATABASE_MAX_CONNS, 4 to 1000; 0: not set, see DatabasePoolSize).
+	DatabaseMaxConns int
 
 	LogLevel  string
 	LogFormat string
@@ -215,6 +219,39 @@ func Defaults() Config {
 		ShutdownDelay:                   5 * time.Second,
 		ShutdownTimeout:                 60 * time.Second,
 	}
+}
+
+// DefaultDatabaseMaxConns is the serving pool's size when neither
+// DATABASE_MAX_CONNS nor DATABASE_URL's pool_max_conns sets it. pgx's own
+// default, max(4, CPUs), is too small for a portal whose provider token
+// refreshes each hold a connection for up to 10 s (issue #107).
+const DefaultDatabaseMaxConns = 20
+
+// DatabasePoolSize is the serving pool's size: DATABASE_MAX_CONNS when set,
+// else 0 (keep it) when DATABASE_URL sets pool_max_conns itself, else
+// DefaultDatabaseMaxConns.
+func (c Config) DatabasePoolSize() int {
+	switch {
+	case c.DatabaseMaxConns > 0:
+		return c.DatabaseMaxConns
+	case urlSetsPoolMaxConns(c.DatabaseURL):
+		return 0
+	}
+	return DefaultDatabaseMaxConns
+}
+
+// poolMaxConnsKey finds pool_max_conns as a key of a keyword/value
+// connection string ("host=db pool_max_conns=10").
+var poolMaxConnsKey = regexp.MustCompile(`(^|\s)pool_max_conns\s*=`)
+
+// urlSetsPoolMaxConns reports whether a connection string sets pgx's
+// pool_max_conns: a URL's query parameter, or a keyword/value key.
+func urlSetsPoolMaxConns(s string) bool {
+	if strings.HasPrefix(s, "postgres://") || strings.HasPrefix(s, "postgresql://") {
+		u, err := url.Parse(s)
+		return err == nil && u.Query().Has("pool_max_conns")
+	}
+	return poolMaxConnsKey.MatchString(s)
 }
 
 // MigrationURL is used only by migration, never doctor or key rotation.

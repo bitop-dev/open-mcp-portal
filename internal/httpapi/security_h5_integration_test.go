@@ -490,3 +490,35 @@ func TestNarrowOnRefreshNeedsARefreshToken(t *testing.T) {
 		t.Fatalf("connection = %+v, refreshes %v", conns[0], e.oauth.RefreshScopes())
 	}
 }
+
+// A narrowed refresh answered with an empty access token (issue #107) fails
+// closed for a person's connection too: refused as provider_unavailable,
+// nothing forwarded (not the stored full token either), nothing cached and
+// the connection kept.
+func TestNarrowOnRefreshEmptyTokenFailsClosed(t *testing.T) {
+	e := newProvEnv(t)
+	e.scalar(`UPDATE auth_providers SET narrow_on_refresh=true WHERE id=$1 RETURNING 'ok'`, e.provider.Id)
+	e.connectBroadly("repo", "read:user")
+	conn := e.myConnID()
+	e.mustAllow(conn, findAllowable(t, e.allowable(e.member, conn), "status"))
+	e.oauth.Set(func(f *testutil.FakeOAuth) { f.FailRefresh = "empty_access" })
+	for range 2 {
+		before := e.oauth.RefreshRequests()
+		if c, _, data := rpcErr(e.callTool(e.key, f3Tool)); c != -32010 || data["reason"] != "provider_unavailable" {
+			t.Fatalf("empty narrowed token: %v %v", c, data)
+		}
+		if e.oauth.RefreshRequests() != before+1 {
+			t.Fatal("an empty narrowed token was cached")
+		}
+	}
+	if n := e.toolCalls("provider_token"); n != 0 {
+		t.Fatal("an empty narrowed token fell back to the stored full token")
+	}
+	if st := e.scalar(`SELECT status FROM provider_connections WHERE id = $1`, conn); st != "active" {
+		t.Fatalf("status after an empty narrowed token = %s", st)
+	}
+	e.oauth.Set(func(f *testutil.FakeOAuth) { f.FailRefresh = "" })
+	if !e.providerReport(e.callTool(e.key, f3Tool)).Received {
+		t.Fatal("a working provider did not deliver again")
+	}
+}

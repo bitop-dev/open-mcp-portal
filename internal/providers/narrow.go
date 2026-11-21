@@ -189,6 +189,12 @@ func (s *Service) narrowedToken(ctx context.Context, p dbgen.AuthProvider, c dbg
 				return err
 			}
 		}
+		if tok.Access == "" {
+			// Fail closed: never a token to send or cache, and never the
+			// stored one instead (parseToken refuses this answer already).
+			outcome = &UnavailableError{Provider: registry.ProviderOf(p), Code: "invalid_response"}
+			return nil
+		}
 		if tok.HasScope {
 			for _, got := range tok.Scopes {
 				if !slices.Contains(scopes, got) {

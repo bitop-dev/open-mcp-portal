@@ -67,6 +67,7 @@ file named by `OMP_CONFIG_FILE`. Each secret can also be read from a file named 
 | `DATABASE_MIGRATE_URL` | no (secret) | Migration owner URL, only for `migrate` / `MIGRATE_ON_START`; falls back to `DATABASE_URL`. Supports `_FILE` and YAML. |
 | `DB_RUNTIME_ROLE` | no | Existing role to reconcile grants to after every migrate; empty retains single-owner operation. |
 | `DB_REQUIRE_SPLIT_ROLES` | no | `false` by default; `true` refuses unsafe serving privileges and requires a target role for migration. |
+| `DATABASE_MAX_CONNS` | optional | Connections in each replica's serving pool (default `20`; 4 to 1000; an invalid value stops startup). Unset, a `pool_max_conns` in `DATABASE_URL` is kept; set, it wins. See [Scaling](#scaling). |
 | `ENCRYPTION_KEY` | yes (secret) | 32 random bytes, base64. Encrypts MCP server header values, identity signing keys, auth provider client secrets, people's provider tokens and captured call payloads. |
 | `ENCRYPTION_KEY_PREVIOUS` | while rotating (secret) | The old key, still accepted for decryption until `rotate-keys` re-encrypts everything. See [Key rotation](#key-rotation). |
 | `API_KEY_PEPPER` | yes (secret) | 32 random bytes, base64. Keys the HMAC that stores API keys, service account keys and connected apps' tokens. Rotate it with `API_KEY_PEPPER_PREVIOUS`, never by just replacing it. |
@@ -645,7 +646,13 @@ must start with `omp-smoke`), `SMOKE_NODE_IMAGE`.
     replica runs each at a time (`omp_loop_leader` is 1 on a replica whose latest run held the lock; runs are short,
     so it can be 1 on several replicas at once, and 0 on all of them only when nothing is running the loop).
   - Session cleanup and the deletion of old rate limit windows run on every replica. Their deletes are idempotent.
-- Each replica holds a pgx connection pool. Size Postgres `max_connections` (or a pooler) for replicas × pool size.
+- Each replica holds a pgx connection pool of `DATABASE_MAX_CONNS` connections (default 20). Size Postgres
+  `max_connections` (or a pooler) for replicas × pool size, plus the migration Job and `doctor`. A provider token
+  refresh holds one connection, under the connection's row lock, for as long as the identity provider takes to answer
+  (up to 10 s), so a slow provider and a burst of refreshes can take several at once: raise the pool if
+  `omp_db_pool_acquired_connections` stays near `omp_db_pool_max_connections` while providers are slow. Releasing the
+  connection during the outbound request (a lease or advisory lock instead of the open transaction) is a possible later
+  change ([#107](https://github.com/ncecere/open-mcp-portal/issues/107)), not done yet.
 - **Rate limits are shared by every replica.** The limits on `/mcp/{slug}` (Admin › Limits), the OAuth endpoints,
   connect start, sign-in (`LOGIN_ATTEMPTS_PER_MINUTE`) and `/v1` (`REQUESTS_PER_MINUTE`) are counted in one PostgreSQL
   table (`rate_limit_counters`, UNLOGGED: counters may be lost on a crash or failover) in fixed one-minute windows. One

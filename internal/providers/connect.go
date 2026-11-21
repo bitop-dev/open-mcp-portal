@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -288,7 +289,9 @@ func (s *Service) Start(ctx context.Context, a authz.Actor, in StartInput) (Star
 		if in.RequestID == nil && !in.ServerBoundAllowed {
 			return Started{}, errNoProvider
 		}
-		if err := s.linkUsable(ctx, p); err != nil {
+		if ok, err := s.linkOK(ctx, p); err != nil {
+			return Started{}, err
+		} else if !ok {
 			return Started{}, errNoProvider
 		}
 	}
@@ -378,6 +381,25 @@ func (s *Service) linkUsable(ctx context.Context, p dbgen.AuthProvider) error {
 func linkUsableWith(ctx context.Context, q store.EndpointReader, p dbgen.AuthProvider) error {
 	_, err := clientOfWith(ctx, q, p)
 	return err
+}
+
+// linkOK is linkUsable as an answer: false when the link refuses (the
+// platform provider is off, gone or no longer matches), and an error only
+// when it couldn't be read. A failed read is never a refusal: it would turn
+// a database error into "the provider is turned off" (issue #107).
+func (s *Service) linkOK(ctx context.Context, p dbgen.AuthProvider) (bool, error) {
+	return linkOKWith(ctx, s.q, p)
+}
+
+func linkOKWith(ctx context.Context, q store.EndpointReader, p dbgen.AuthProvider) (bool, error) {
+	err := linkUsableWith(ctx, q, p)
+	switch {
+	case err == nil:
+		return true, nil
+	case errors.Is(err, errLinkMismatch) || errors.Is(err, pgx.ErrNoRows):
+		return false, nil
+	}
+	return false, fmt.Errorf("providers: reading the platform provider of %s: %w", p.Slug, err)
 }
 
 var errLinkMismatch = apperr.New(http.StatusUnprocessableEntity, "provider_mismatch",

@@ -39,7 +39,12 @@ func (s *Service) ServicePickable(ctx context.Context, a authz.Actor, team strin
 		if e != nil {
 			return nil, e
 		}
-		if p.Enabled && s.linkUsable(ctx, p) == nil {
+		if !p.Enabled {
+			continue
+		}
+		if ok, e := s.linkOK(ctx, p); e != nil {
+			return nil, e
+		} else if ok {
 			out = append(out, registry.ProviderOf(p))
 		}
 	}

@@ -53,11 +53,10 @@ func serviceProviderUsable(ctx context.Context, q *dbgen.Queries, id uuid.UUID) 
 	if e != nil {
 		return p, e
 	}
-	if e := linkUsableWith(ctx, q, p); e != nil {
-		if errors.Is(e, errLinkMismatch) || errors.Is(e, pgx.ErrNoRows) {
-			return p, ErrProviderDisabled
-		}
+	if ok, e := linkOKWith(ctx, q, p); e != nil {
 		return p, e
+	} else if !ok {
+		return p, ErrProviderDisabled
 	}
 	return p, nil
 }

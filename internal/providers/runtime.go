@@ -114,9 +114,13 @@ func (s *Service) Credential(ctx context.Context, req *registry.Requirement, cc 
 	if !p.Enabled {
 		return Credential{}, ErrProviderDisabled
 	}
-	if p.Kind == KindMCPServer && s.linkUsable(ctx, p) != nil {
+	if p.Kind == KindMCPServer {
 		// The platform provider whose client the server uses is off.
-		return Credential{}, ErrProviderDisabled
+		if ok, err := s.linkOK(ctx, p); err != nil {
+			return Credential{}, err
+		} else if !ok {
+			return Credential{}, ErrProviderDisabled
+		}
 	}
 	if p.Kind != KindMCPServer {
 		// The provider's access list, checked on every call: removing a

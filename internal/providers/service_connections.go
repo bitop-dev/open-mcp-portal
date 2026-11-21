@@ -293,11 +293,10 @@ func (s *Service) validateServiceGrants(ctx context.Context, q *dbgen.Queries, a
 	if !p.Enabled {
 		return errNoProvider
 	}
-	if e := linkUsableWith(ctx, q, p); e != nil {
-		if errors.Is(e, errLinkMismatch) || errors.Is(e, pgx.ErrNoRows) {
-			return errNoProvider
-		}
+	if ok, e := linkOKWith(ctx, q, p); e != nil {
 		return e
+	} else if !ok {
+		return errNoProvider
 	}
 	if s.Reachable == nil {
 		return apperr.NotFound("server_not_found", "Server not found")

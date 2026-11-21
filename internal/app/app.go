@@ -72,7 +72,7 @@ func Run(ctx context.Context, mode string, cfg config.Config, log *slog.Logger) 
 	log.Info("starting", "version", buildinfo.Version, "commit", buildinfo.Commit)
 
 	if mode == ModeMigrate || cfg.MigrateOnStart {
-		owner, err := store.OpenWait(ctx, cfg.MigrationURL(), dbConnectWait, log)
+		owner, err := store.OpenWait(ctx, cfg.MigrationURL(), 0, dbConnectWait, log)
 		if err != nil {
 			return err
 		}
@@ -97,11 +97,12 @@ func Run(ctx context.Context, mode string, cfg config.Config, log *slog.Logger) 
 			return nil
 		}
 	}
-	pool, err := store.OpenWait(ctx, cfg.DatabaseURL, dbConnectWait, log)
+	pool, err := store.OpenWait(ctx, cfg.DatabaseURL, cfg.DatabasePoolSize(), dbConnectWait, log)
 	if err != nil {
 		return err
 	}
 	defer pool.Close()
+	log.Info("postgres pool", "maxConns", pool.Config().MaxConns)
 	safety, err := store.InspectRoles(ctx, pool, "", true)
 	if err != nil {
 		return fmt.Errorf("postgres roles: %w", err)

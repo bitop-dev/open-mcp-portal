@@ -44,7 +44,8 @@ type FakeOAuth struct {
 	// was asked); OmitScope leaves scope out of token answers.
 	GrantScopes []string
 	OmitScope   bool
-	// FailRefresh: "" (work), "invalid_grant" (400) or "unavailable" (503).
+	// FailRefresh: "" (work), "invalid_grant" or "invalid_scope" (400),
+	// "unavailable" (503) or "empty_access" (200 with an empty access_token).
 	FailRefresh string
 	// RefreshGrantedScopes simulates an authorization server shrinking consent.
 	RefreshGrantedScopes []string
