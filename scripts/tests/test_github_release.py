@@ -95,9 +95,11 @@ class GithubReleaseDryRun(unittest.TestCase):
         notes = (out / "notes.md").read_text()
         for want in ["## omp command line", "cosign verify-blob omp-v0.9.0-linux-amd64",
                      "--bundle omp-v0.9.0-linux-amd64.sigstore.json",
-                     "--certificate-identity https://github.com/ncecere/open-mcp-portal/.github/workflows/image.yml@refs/tags/v0.9.0",
+                     "--certificate-identity https://github.com/bitop-dev/open-mcp-portal/.github/workflows/image.yml@refs/tags/v0.9.0",
                      "--certificate-oidc-issuer https://token.actions.githubusercontent.com",
-                     "`omp-v0.9.0-<os>-<arch>`", "cosign verify ghcr.io/ncecere/open-mcp-portal@" + DIGEST]:
+                     "`omp-v0.9.0-<os>-<arch>`", "cosign verify ghcr.io/bitop-dev/open-mcp-portal@" + DIGEST,
+                     "ghcr.io/bitop-dev/open-mcp-portal:v0.9.0",
+                     "https://github.com/bitop-dev/open-mcp-portal/blob/v0.9.0/docs/cli.md"]:
             self.assertIn(want, notes)
 
     def test_binaries_are_signed_when_a_cosign_is_given(self):

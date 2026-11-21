@@ -258,7 +258,7 @@ func TestOpsArtifactsUseRealMetrics(t *testing.T) {
 			if r.Annotations["summary"] == "" || r.Annotations["description"] == "" {
 				t.Errorf("%s: no summary or description", r.Alert)
 			}
-			want := "https://github.com/ncecere/open-mcp-portal/blob/main/docs/phase6-operations.md#" + strings.ToLower(r.Alert)
+			want := "https://github.com/bitop-dev/open-mcp-portal/blob/main/docs/phase6-operations.md#" + strings.ToLower(r.Alert)
 			if r.Annotations["runbook_url"] != want {
 				t.Errorf("%s: runbook_url = %q, want %q", r.Alert, r.Annotations["runbook_url"], want)
 			}

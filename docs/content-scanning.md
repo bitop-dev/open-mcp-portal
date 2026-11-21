@@ -833,7 +833,7 @@ F1–F4 (slices 0 and 1) are created on GitHub (#70–#73); F5–F14 remain **dr
 or two, L several weeks). Every issue also requires the repository's usual gates (`make generate`, `make lint`,
 tests including PostgreSQL integration, web checks when the UI changes) and its own docs and changelog line.
 
-**F1 ([#70](https://github.com/ncecere/open-mcp-portal/issues/70)). Scanning test corpus and benchmark harness.** *Size M. Depends on: this design accepted.*
+**F1 ([#70](https://github.com/bitop-dev/open-mcp-portal/issues/70)). Scanning test corpus and benchmark harness.** *Size M. Depends on: this design accepted.*
 Build the in-repo corpus of section 10 (must-catch, benign near-misses, known-miss ledger, evasions, pathological,
 generated secret fixtures, runtime-built Unicode fixtures), the scheduled job that downloads pinned permissive
 public corpora and publishes per-rule numbers, and the benchmark harness for the budgets in 2 and A2.
@@ -841,13 +841,13 @@ public corpora and publishes per-rule numbers, and the benchmark harness for the
 in CI with a measured baseline recorded; the job refuses a corpus whose licence is missing, inconsistent or gated;
 no third-party text committed.
 
-**F2 ([#71](https://github.com/ncecere/open-mcp-portal/issues/71)). Extract the secret rules into a shared registry (no behaviour change).** *Size S. Depends on: none (can
+**F2 ([#71](https://github.com/bitop-dev/open-mcp-portal/issues/71)). Extract the secret rules into a shared registry (no behaviour change).** *Size S. Depends on: none (can
 precede F1).* Move `capture.BuiltInRules`, sensitive keys and the exact-value rule behind a registry that offers
 `Redact` (unchanged) and `Find` (rule id and count only); add the detect profile (minimum lengths, placeholder
 suppression) as separate data. *Acceptance:* `TestBuiltInRules`, `TestCompileRefusals`, `TestPayloadCapture` and the
 sentinel tests pass unmodified; redaction output is byte-identical on the existing corpus; `Find` returns no text.
 
-**F3 ([#72](https://github.com/ncecere/open-mcp-portal/issues/72)). Definition scanning at refresh, in shadow (first build issue).** *Size M. Depends on: F1, F2.*
+**F3 ([#72](https://github.com/bitop-dev/open-mcp-portal/issues/72)). Definition scanning at refresh, in shadow (first build issue).** *Size M. Depends on: F1, F2.*
 Ruleset v1 for definitions (secret, unicode, poison, length groups; ids as in 3); a hook in
 `(*Service).refresh` in `internal/registry` before the transaction, written in the same transaction as `storeCapabilities`;
 `scan_findings` (definition rows, CHECK-constrained identifiers, cascade with the capability); the platform setting
@@ -855,7 +855,7 @@ Ruleset v1 for definitions (secret, unicode, poison, length groups; ids as in 3)
 operation, plus a leader-elected backfill after upgrade or a ruleset change); the rule catalog operation; the
 definition-stage metrics; threat-model and operator docs. *Acceptance:* A1 to A6, A8, A10 to A12.
 
-**F4 ([#73](https://github.com/ncecere/open-mcp-portal/issues/73)). Findings in the Capabilities tab and the review dialogs.** **UI shipped; shadow only.** *Size S. Depends on: F3.* A findings panel per
+**F4 ([#73](https://github.com/bitop-dev/open-mcp-portal/issues/73)). Findings in the Capabilities tab and the review dialogs.** **UI shipped; shadow only.** *Size S. Depends on: F3.* A findings panel per
 capability and a summary in the publish and review dialogs, with the ruleset version, the "found nothing does not
 mean safe" wording and no success state. *Acceptance:* A9; keyboard and screen-reader use verified by axe in Vitest;
 no hard-coded colours (the styling check).

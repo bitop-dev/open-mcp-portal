@@ -6,8 +6,9 @@ Notable changes to Open MCP Portal, one entry per release. Design notes for each
 The project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Before 1.0, minor releases may include
 breaking changes; the entry says how to adapt.
 
-## [Unreleased]
+## [0.15.3] - 2026-11-21
 
+- **The image moved to `ghcr.io/bitop-dev/open-mcp-portal`**, with the repository, and is signed by `https://github.com/bitop-dev/open-mcp-portal/.github/workflows/image.yml`. v0.15.2 and earlier stay at `ghcr.io/ncecere/open-mcp-portal`. Change the `name:` of your Kustomize `images:` entry (an entry with the old name is silently ignored) and the certificate identity of any signature check ([docs/deploy.md](docs/deploy.md#image-location-changed-in-v0153)). The Go module path is unchanged.
 - **Security:** built with Go 1.26.11, which fixes GO-2026-6859 in `net/http` (the portal's code reaches it; 0.15.2 and earlier were built with Go 1.26.10). Dependency updates: pgx 5.12.0, go-jose 4.1.9, goose 3.30.0, kin-openapi 0.153.0, `golang.org/x/oauth2` 0.38.0, `golang.org/x/text` 0.44.0, and the web build and test tools.
 - **Database pool size (#107).** `DATABASE_MAX_CONNS` sets each replica's serving connection pool (default `20`, 4 to 1000; an invalid value stops startup). It was pgx's default of max(4, CPUs), which a slow identity provider could exhaust: a provider token refresh holds a connection for up to 10 s. A `pool_max_conns` already in `DATABASE_URL` is kept when the setting is unset. Size Postgres `max_connections` for replicas × pool size ([docs/deploy.md](docs/deploy.md#scaling)).
 - **Provider credential fixes (#107).** A failed database read of a server's linked platform provider is now an internal error: before, it was reported as "the auth provider is turned off" for gateway calls and as a missing provider when connecting. A narrowed token refresh that answers with an empty access token is refused (`provider_unavailable`) and never cached, and a narrowed call is never sent the connection's stored, broader token instead.
@@ -382,4 +383,4 @@ final release). `scripts/github-release.sh` then creates the GitHub Release from
 platform's SBOM, the digest and `checksums.txt`. `open-mcp-portal version` prints `open-mcp-portal 0.1.0 (<commit>)`. The
 Kustomize base points at `ghcr.io/ncecere/open-mcp-portal:v0.1.0`.
 
-[0.1.0]: https://github.com/ncecere/open-mcp-portal/releases/tag/v0.1.0
+[0.1.0]: https://github.com/bitop-dev/open-mcp-portal/releases/tag/v0.1.0

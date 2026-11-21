@@ -59,7 +59,10 @@ def main() -> None:
     edit("web/package.json", [(rf'"version": "{o}",', f'"version": "{n_}",')])
     edit("web/package-lock.json", [(rf'"version": "{o}",', f'"version": "{n_}",')], count=2)
     edit("deploy/kubernetes/base/kustomization.yaml", [(rf"newTag: v{o}", f"newTag: v{n_}")], count=0)
-    edit("deploy/kubernetes/overlays/example/kustomization.yaml", [(rf"newTag: v{o}\n    digest: sha256:[0-9a-f]{{64}}", f"newTag: v{n_}\n    digest: {ZERO}")])
+    # A newName (an older release under its old image name, docs/deploy.md "Image location") goes: a new release is
+    # published under the base's name.
+    edit("deploy/kubernetes/overlays/example/kustomization.yaml",
+         [(rf"(?:^    newName: \S+\n)?^    newTag: v{o}\n    digest: sha256:[0-9a-f]{{64}}", f"    newTag: v{n_}\n    digest: {ZERO}")])
     edit("docs/deploy.md", [(rf"open-mcp-portal:v{o}", f"open-mcp-portal:v{n_}"), (rf"open-mcp-portal {o} \(<commit>\)", f"open-mcp-portal {n_} (<commit>)"),
                             (rf"refs/tags/v{o}", f"refs/tags/v{n_}"), (rf"sets its tag to `v{o}`", f"sets its tag to `v{n_}`"), (rf"newTag: v{o}", f"newTag: v{n_}")], count=0, required=False)
     edit("README.md", [(rf"\*\*Development software \(v{o}\)\.\*\*", f"**Development software (v{n_}).**"), (rf"open-mcp-portal:v{o}", f"open-mcp-portal:v{n_}"),
@@ -67,7 +70,7 @@ def main() -> None:
     edit("SECURITY.md", [(rf"latest release \(v{o}\)", f"latest release (v{n_})")])
     edit(".github/ISSUE_TEMPLATE/client_compatibility.yml", [(rf'placeholder: "{o}"', f'placeholder: "{n_}"')])
     edit(".github/ISSUE_TEMPLATE/bug_report.yml", [(rf'placeholder: "open-mcp-portal {o} \(', f'placeholder: "open-mcp-portal {n_} (')])
-    edit("CHANGELOG.md", [(r"^## Unreleased$", f"## [{n_}] - {a.date}")])
+    edit("CHANGELOG.md", [(r"^## \[?Unreleased\]?$", f"## [{n_}] - {a.date}")])
 
     print(("would change" if a.check else "changed") + f" ({old} -> {new}):")
     for path, what in changes:

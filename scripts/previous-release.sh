@@ -3,8 +3,8 @@
 # image, so the test can install it by digest the way docs/deploy.md tells
 # operators to.
 #
-#   scripts/previous-release.sh               # v0.8.0 ghcr.io/ncecere/open-mcp-portal@sha256:...
-#   scripts/previous-release.sh --tag-only    # v0.8.0
+#   scripts/previous-release.sh               # v0.15.2 ghcr.io/ncecere/open-mcp-portal@sha256:...
+#   scripts/previous-release.sh --tag-only    # v0.15.2
 #   scripts/previous-release.sh --tag v0.7.0  # that release's digest (older start for a real schema change)
 #
 # "Previous release" is the newest final release tag (vX.Y.Z, no pre-release
@@ -14,15 +14,25 @@
 # The digest is read from the registry (the image index's Docker-Content-Digest,
 # anonymous pull token). When the example overlay at HEAD pins that same tag
 # with a digest, the two must agree, so a moved or re-pushed tag fails here
-# instead of testing the wrong image.
+# instead of testing the wrong image; the overlay must also name the image
+# repository that release is published under.
+#
+# The image repository depends on the release: the GitHub repository moved from
+# ncecere/open-mcp-portal to bitop-dev/open-mcp-portal after v0.15.2, so
+# releases up to and including v0.15.2 are ghcr.io/ncecere/open-mcp-portal and
+# later ones ghcr.io/bitop-dev/open-mcp-portal (docs/deploy.md, "Image").
 #
 # Needs git, curl and jq. Settings (environment, mostly for tests):
-#   OMP_IMAGE_REPO     ncecere/open-mcp-portal
-#   OMP_REGISTRY_URL   https://ghcr.io  (the registry API base)
-#   OMP_TOKEN_URL      the token endpoint (default <registry>/token)
+#   OMP_IMAGE_REPO         bitop-dev/open-mcp-portal  (releases after OMP_LEGACY_IMAGE_LAST)
+#   OMP_LEGACY_IMAGE_REPO  ncecere/open-mcp-portal    (releases up to OMP_LEGACY_IMAGE_LAST)
+#   OMP_LEGACY_IMAGE_LAST  v0.15.2                    (the last release published under the legacy repository)
+#   OMP_REGISTRY_URL       https://ghcr.io  (the registry API base)
+#   OMP_TOKEN_URL          the token endpoint (default <registry>/token)
 set -euo pipefail
 
-REPO="${OMP_IMAGE_REPO:-ncecere/open-mcp-portal}"
+CURRENT_REPO="${OMP_IMAGE_REPO:-bitop-dev/open-mcp-portal}"
+LEGACY_REPO="${OMP_LEGACY_IMAGE_REPO:-ncecere/open-mcp-portal}"
+LEGACY_LAST="${OMP_LEGACY_IMAGE_LAST:-v0.15.2}"
 REGISTRY_URL="${OMP_REGISTRY_URL:-https://ghcr.io}"
 REGISTRY_HOST="${REGISTRY_URL#*://}"
 TOKEN_URL="${OMP_TOKEN_URL:-${REGISTRY_URL}/token}"
@@ -49,7 +59,19 @@ previous_tag() {
   done
 }
 
-# registry_digest TAG: the digest of the tag's manifest (index) on the registry.
+# image_repo TAG: the image repository (without the registry host) the release
+# TAG was published under.
+image_repo() {
+  local tag=$1
+  if [ "$(printf '%s\n%s\n' "$tag" "$LEGACY_LAST" | sort -V | head -n 1)" = "$tag" ]; then
+    echo "$LEGACY_REPO"
+  else
+    echo "$CURRENT_REPO"
+  fi
+}
+
+# registry_digest TAG: the digest of the tag's manifest (index) on the registry,
+# read from the repository in $REPO.
 registry_digest() {
   local tag=$1 token digest
   token="$(curl -fsS --retry 3 --retry-delay 2 --max-time 30 "${TOKEN_URL}?service=${REGISTRY_HOST}&scope=repository:${REPO}:pull" | jq -er .token)" ||
@@ -62,13 +84,20 @@ registry_digest() {
   echo "$digest"
 }
 
-# pinned_digest TAG: the digest the example overlay at HEAD pins for TAG, if any.
-pinned_digest() {
+# pinned_image TAG: "IMAGE DIGEST" for the images: entry of the example overlay
+# at HEAD that pins TAG, if any. IMAGE is the entry's newName, or its name when
+# it has none (the image the overlay renders); DIGEST may be empty.
+pinned_image() {
   local tag=$1 f="${ROOT}/deploy/kubernetes/overlays/example/kustomization.yaml"
   [ -f "$f" ] || return 0
   awk -v tag="$tag" '
-    $1 == "newTag:" { seen = ($2 == tag) }
-    seen && $1 == "digest:" { print $2; exit }' "$f"
+    function flush() { if (t == tag && !done) { print (nn != "" ? nn : n), d; done = 1 } }
+    /^[^ #]/ { flush(); n = nn = t = d = "" }
+    $1 == "-" && $2 == "name:" { flush(); n = $3; nn = t = d = "" }
+    $1 == "newName:" { nn = $2 }
+    $1 == "newTag:" { t = $2 }
+    $1 == "digest:" { d = $2 }
+    END { flush() }' "$f" | tr -d '"'"'"
 }
 
 tag=""
@@ -98,9 +127,15 @@ if [ "$tag_only" = 1 ]; then
   exit 0
 fi
 
+REPO="$(image_repo "$tag")"
 digest="$(registry_digest "$tag")"
-pinned="$(pinned_digest "$tag")"
-if [ -n "$pinned" ] && [ "$pinned" != "$digest" ]; then
+read -r pinned_name pinned <<<"$(pinned_image "$tag")" || true
+# The repository path is compared, not the host: the overlay names ghcr.io, and
+# the tests use a stub registry on another host.
+if [ -n "${pinned_name:-}" ] && [ "${pinned_name#*/}" != "$REPO" ]; then
+  die "deploy/kubernetes/overlays/example/kustomization.yaml pins ${tag} as ${pinned_name}, but ${tag} is published as ${REPO}: set the entry's newName"
+fi
+if [ -n "${pinned:-}" ] && [ "$pinned" != "$digest" ]; then
   die "${REPO}:${tag} is ${digest} on the registry but ${pinned} in deploy/kubernetes/overlays/example/kustomization.yaml: the tag moved, or the pin is wrong"
 fi
 echo "${tag} ${REGISTRY_HOST}/${REPO}@${digest}"

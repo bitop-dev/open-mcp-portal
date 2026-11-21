@@ -4,7 +4,7 @@
 
 Please report vulnerabilities **privately**. Don't open a public issue, pull request or discussion.
 
-Use GitHub's private vulnerability reporting: **[Report a vulnerability](https://github.com/ncecere/open-mcp-portal/security/advisories/new)** on the repository's Security tab. Only the maintainers see the report, and we work on the fix with you in a private advisory.
+Use GitHub's private vulnerability reporting: **[Report a vulnerability](https://github.com/bitop-dev/open-mcp-portal/security/advisories/new)** on the repository's Security tab. Only the maintainers see the report, and we work on the fix with you in a private advisory.
 
 Include:
 - the affected version or commit;
@@ -20,7 +20,7 @@ Open MCP Portal is pre-1.0 development software. Security fixes are made on `mai
 
 | Version | Supported |
 |---|---|
-| `main` and the latest release (v0.15.2) | Yes |
+| `main` and the latest release (v0.15.3) | Yes |
 
 ## Scope
 

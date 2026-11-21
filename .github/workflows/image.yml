@@ -1,5 +1,15 @@
-# Builds, checks, scans, signs and publishes ghcr.io/ncecere/open-mcp-portal,
+# Builds, checks, scans, signs and publishes ghcr.io/bitop-dev/open-mcp-portal,
 # and creates the GitHub Release, for v* tags.
+#
+# The image follows the GitHub repository: from v0.15.3 it is
+# ghcr.io/bitop-dev/open-mcp-portal. v0.15.2 and earlier were published from
+# ncecere/open-mcp-portal, before the repository moved, and stay at
+# ghcr.io/ncecere/open-mcp-portal (scripts/previous-release.sh knows both). The
+# tag check below refuses to build when IMAGE is not ghcr.io/<this repository>:
+# the package and the keyless signing identity
+# (https://github.com/<repository>/.github/workflows/image.yml@refs/tags/<tag>)
+# both come from the repository the workflow runs in, so a mismatch would fail
+# the push after the tag, or sign under an identity the notes do not name.
 #
 # Runs only for a tag vX.Y.Z or a pre-release tag vX.Y.Z-rc.N (a hyphen makes
 # it a pre-release). It can also be run by hand (workflow_dispatch) with a
@@ -34,7 +44,9 @@ permissions:
   contents: read
 
 env:
-  IMAGE: ghcr.io/ncecere/open-mcp-portal
+  # Must equal ghcr.io/<github.repository> (checked before anything is pushed),
+  # and the image in scripts/github-release.sh.
+  IMAGE: ghcr.io/bitop-dev/open-mcp-portal
 
 jobs:
   build:
@@ -78,6 +90,15 @@ jobs:
           fi
           if [ ! -f "docs/releases/${base}.md" ]; then
             echo "::error::no release notes: docs/releases/${base}.md"
+            exit 1
+          fi
+          if [ "${IMAGE}" != "ghcr.io/${GITHUB_REPOSITORY,,}" ]; then
+            echo "::error::IMAGE is ${IMAGE}, but this workflow runs in ${GITHUB_REPOSITORY}: its token can push and sign only for ghcr.io/${GITHUB_REPOSITORY,,}"
+            exit 1
+          fi
+          script_image="ghcr.io/$(sed -n 's/^repo_slug=\(.*\)$/\1/p' scripts/github-release.sh)"
+          if [ "${script_image}" != "${IMAGE}" ]; then
+            echo "::error::scripts/github-release.sh names ${script_image}, but IMAGE is ${IMAGE}"
             exit 1
           fi
           {

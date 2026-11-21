@@ -7,7 +7,7 @@ body:
       value: |
         Please read [what the portal will not do](https://docs.omp.bitop.dev/docs/releases/roadmap) first: it does not host or run
         MCP servers (no stdio), and it is not an LLM gateway or an agent runtime. For half-formed ideas, start a
-        [discussion](https://github.com/ncecere/open-mcp-portal/discussions) instead.
+        [discussion](https://github.com/bitop-dev/open-mcp-portal/discussions) instead.
   - type: textarea
     id: problem
     attributes:

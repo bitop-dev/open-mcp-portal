@@ -6,7 +6,7 @@ import { Time } from "@/components/ui/time/time";
 import { capabilitiesQuery, type ServerScope } from "./scope";
 import m from "./scan-findings.module.css";
 
-export const scanningDocs = "https://github.com/ncecere/open-mcp-portal/blob/main/docs/content-scanning.md#9-what-this-will-not-catch";
+export const scanningDocs = "https://github.com/bitop-dev/open-mcp-portal/blob/main/docs/content-scanning.md#9-what-this-will-not-catch";
 type Scan = Schemas["DefinitionScanPage"][number]["scan"];
 
 export function describeScanError(error: unknown) {

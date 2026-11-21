@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/ncecere/open-mcp-portal/blob/main/api/omp-v1.schema.json",
+  "$id": "https://github.com/bitop-dev/open-mcp-portal/blob/main/api/omp-v1.schema.json",
   "title": "omp/v1: declarative Open MCP Portal configuration",
   "description": "The file format of `omp export` and `omp import` (docs/cli.md), shared with the GitHub Action and the Terraform provider (issue 47). Every optional field means \"leave it alone\" when absent. Secrets are never in the file: a static header's value is read from the environment variable named by authValueEnv. Servers need a team publisher token; teams, gateways and limits need a platform-admin token with platform:write. Team gateways and members are not reachable by tokens and are not part of v1.",
   "type": "object",

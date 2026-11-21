@@ -93,6 +93,28 @@ if ! { grep -q "^  METRICS_ADDR: :9090\$" "${scratch}/example.yaml" && grep -q "
   exit 1
 fi
 
+# The overlays' images: entries still match the base's image name (the
+# kustomize match key; an entry with another name silently changes nothing, so
+# the example's digest pin would be lost): both portal containers of the
+# example render pinned by digest, and the smoke overlays render the local image.
+base_image="$(sed -n 's/^ *image: \(ghcr\.io\/[^:@]*\)$/\1/p' "${root}/base/deployment.yaml" | sort -u)"
+if [ "$(printf '%s\n' "$base_image" | wc -l)" -ne 1 ] || ! grep -q "^  - name: ${base_image}\$" "${root}/base/kustomization.yaml"; then
+  echo "base: deployment.yaml and kustomization.yaml do not name one portal image ('${base_image}')" >&2
+  exit 1
+fi
+for overlay in example smoke; do
+  grep -q "^  - name: ${base_image}\$" "${root}/overlays/${overlay}/kustomization.yaml" ||
+    { echo "overlays/${overlay}: no images: entry for the base's image ${base_image}" >&2; exit 1; }
+done
+if [ "$(grep -cE '^ +image: ghcr\.io/[a-z0-9-]+/open-mcp-portal(:[^@ ]+)?@sha256:[0-9a-f]{64}$' "${scratch}/example.yaml")" -ne 2 ]; then
+  echo "overlays/example: the portal containers are not pinned by digest" >&2
+  exit 1
+fi
+if grep -E '^ +image: .*open-mcp-portal' "${scratch}/smoke.yaml" "${scratch}/smoke-ingress.yaml"; then
+  echo "overlays/smoke: a portal container does not use the local image omp-smoke/portal" >&2
+  exit 1
+fi
+
 # No secret values in the manifests: the runtime secret is referenced only
 # (the smoke overlay's secrets are created by scripts/k8s-smoke.sh).
 if grep -q "^kind: Secret\$" "${scratch}/base.yaml" "${scratch}"/example.yaml "${scratch}"/smoke.yaml "${scratch}"/smoke-ingress.yaml; then

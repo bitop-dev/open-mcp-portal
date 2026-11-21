@@ -14,18 +14,42 @@ queue or object storage.
 
 ## Image
 
-Released images are `ghcr.io/ncecere/open-mcp-portal:vX.Y.Z` (and `latest` for final releases), multi-arch
+Released images are `ghcr.io/bitop-dev/open-mcp-portal:vX.Y.Z` (and `latest` for final releases; v0.15.2 and earlier
+are `ghcr.io/ncecere/open-mcp-portal`, see [below](#image-location-changed-in-v0153)), multi-arch
 (linux/amd64 and linux/arm64) with SBOM and provenance attestations, signed with cosign (keyless, GitHub Actions OIDC):
 
 ```sh
-docker pull ghcr.io/ncecere/open-mcp-portal:v0.15.2
-docker run --rm ghcr.io/ncecere/open-mcp-portal:v0.15.2 version     # open-mcp-portal 0.15.2 (<commit>)
+docker pull ghcr.io/bitop-dev/open-mcp-portal:v0.15.3
+docker run --rm ghcr.io/bitop-dev/open-mcp-portal:v0.15.3 version     # open-mcp-portal 0.15.3 (<commit>)
 
 # Pin the digest from the GitHub Release, and verify it first (cosign v3 or newer):
-cosign verify ghcr.io/ncecere/open-mcp-portal@sha256:<digest> \
-  --certificate-identity https://github.com/ncecere/open-mcp-portal/.github/workflows/image.yml@refs/tags/v0.15.2 \
+cosign verify ghcr.io/bitop-dev/open-mcp-portal@sha256:<digest> \
+  --certificate-identity https://github.com/bitop-dev/open-mcp-portal/.github/workflows/image.yml@refs/tags/v0.15.3 \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
+
+### Image location (changed in v0.15.3)
+
+The GitHub repository moved from `ncecere/open-mcp-portal` to `bitop-dev/open-mcp-portal`, and the image moved with it:
+
+| Releases | Image | Signing identity (`--certificate-identity`) |
+|---|---|---|
+| v0.15.3 and later | `ghcr.io/bitop-dev/open-mcp-portal` | `https://github.com/bitop-dev/open-mcp-portal/.github/workflows/image.yml@refs/tags/<tag>` |
+| v0.15.2 and earlier | `ghcr.io/ncecere/open-mcp-portal` | `https://github.com/ncecere/open-mcp-portal/.github/workflows/image.yml@refs/tags/<tag>` |
+
+Older images stay where they were published, with their signatures, SBOMs and provenance; nothing was re-pushed. The
+issuer is `https://token.actions.githubusercontent.com` for both. To upgrade to v0.15.3 or later:
+
+- **Kustomize**: the base's image name, the match key of an `images:` entry, is now `ghcr.io/bitop-dev/open-mcp-portal`.
+  Change `name:` in your overlay's entry to it, with the new tag and digest. An entry that still says
+  `ghcr.io/ncecere/open-mcp-portal` **matches nothing and is silently ignored**: the pods would run the base's tag, not
+  your pinned digest. Check with `kustomize build <overlay> | grep image:` that both portal containers (`migrate` and
+  `portal`) show `ghcr.io/bitop-dev/open-mcp-portal@sha256:<digest>`.
+- **Other deployments** (Helm values of your own, Compose, plain manifests): change the image repository, and the
+  certificate identity in any `cosign verify` or admission policy (Sigstore policy-controller, Kyverno), to the new name.
+  An admission policy that only trusts the `ncecere` identity refuses v0.15.3.
+- **Rolling back** to v0.15.2 or earlier with a v0.15.3 or later base: keep `name: ghcr.io/bitop-dev/open-mcp-portal` and
+  add `newName: ghcr.io/ncecere/open-mcp-portal` with that release's tag and digest. The upgrade gate does exactly this.
 
 To build it yourself:
 
@@ -289,15 +313,20 @@ pins it), `SHUTDOWN_DELAY=10s`, `SHUTDOWN_TIMEOUT=125s`, and placeholders for `A
 
 ### Image
 
-The base references `ghcr.io/ncecere/open-mcp-portal` and sets its tag to `v0.15.2` through a Kustomize `images:` entry.
-A tag can move, so pin the digest of the release you verified in your overlay (the digest wins over the tag):
+The base references `ghcr.io/bitop-dev/open-mcp-portal` and sets its tag to `v0.15.3` through a Kustomize `images:` entry.
+A tag can move, so pin the digest of the release you verified in your overlay (the digest wins over the tag). The entry's
+`name` must be the base's image name exactly: an entry with another name is ignored without an error
+([image location](#image-location-changed-in-v0153)). `make k8s-validate` checks this for the overlays in this repository.
 
 ```yaml
 images:
-  - name: ghcr.io/ncecere/open-mcp-portal
-    newTag: v0.15.2
+  - name: ghcr.io/bitop-dev/open-mcp-portal
+    newTag: v0.15.3
     digest: sha256:<digest from the GitHub Release>
 ```
+
+For v0.15.2 or earlier (a rollback), add `newName: ghcr.io/ncecere/open-mcp-portal` to the entry, with that release's tag
+and digest.
 
 ### What the base deploys
 
@@ -465,9 +494,11 @@ times; nothing else is, so a flaky assertion is a bug to fix, not to retry.
 The upgrade rule above ("a release's migrations must work with the previous release's code") was only a promise.
 [`scripts/previous-release.sh`](../scripts/previous-release.sh) names the **previous release**: the newest `vX.Y.Z` tag
 reachable from the checkout that does not point at it (a release tag tests the release before it; pre-releases are
-skipped), and reads its image digest from GHCR. If the example overlay pins that tag with a digest, the two must agree,
-so a moved tag fails the job. `SMOKE_FROM_TAG=v0.7.0` or `SMOKE_FROM_IMAGE=ghcr.io/...@sha256:...` start from another
-release.
+skipped), and reads its image digest from GHCR, from the repository that release was published under
+(`ncecere/open-mcp-portal` up to v0.15.2, `bitop-dev/open-mcp-portal` after). If the example overlay pins that tag with a
+digest, the two must agree, so a moved tag fails the job; the overlay must also render that release's image name. The
+upgrade and the rollback set the image name together with the digest, so the v0.15.2 to v0.15.3 run changes both.
+`SMOKE_FROM_TAG=v0.7.0` or `SMOKE_FROM_IMAGE=ghcr.io/...@sha256:...` start from another release.
 
 1. The previous release is installed **by digest** (pulled on the nodes, so a pull can be retried) and both pods are
    checked to run that image.
@@ -652,7 +683,7 @@ must start with `omp-smoke`), `SMOKE_NODE_IMAGE`.
   (up to 10 s), so a slow provider and a burst of refreshes can take several at once: raise the pool if
   `omp_db_pool_acquired_connections` stays near `omp_db_pool_max_connections` while providers are slow. Releasing the
   connection during the outbound request (a lease or advisory lock instead of the open transaction) is a possible later
-  change ([#107](https://github.com/ncecere/open-mcp-portal/issues/107)), not done yet.
+  change ([#107](https://github.com/bitop-dev/open-mcp-portal/issues/107)), not done yet.
 - **Rate limits are shared by every replica.** The limits on `/mcp/{slug}` (Admin › Limits), the OAuth endpoints,
   connect start, sign-in (`LOGIN_ATTEMPTS_PER_MINUTE`) and `/v1` (`REQUESTS_PER_MINUTE`) are counted in one PostgreSQL
   table (`rate_limit_counters`, UNLOGGED: counters may be lost on a crash or failover) in fixed one-minute windows. One

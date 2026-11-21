@@ -346,7 +346,7 @@ func meta(resourceType string, created, modified time.Time, location string, ver
 func serviceProviderConfig(base string) any {
 	return map[string]any{
 		"schemas":               []string{schemaSPC},
-		"documentationUri":      "https://github.com/ncecere/open-mcp-portal/blob/main/docs/scim.md",
+		"documentationUri":      "https://github.com/bitop-dev/open-mcp-portal/blob/main/docs/scim.md",
 		"patch":                 map[string]any{"supported": true},
 		"bulk":                  map[string]any{"supported": false, "maxOperations": 0, "maxPayloadSize": 0},
 		"filter":                map[string]any{"supported": true, "maxResults": maxPageSize},

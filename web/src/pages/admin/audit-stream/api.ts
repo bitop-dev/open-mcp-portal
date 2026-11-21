@@ -38,4 +38,4 @@ export async function sinkAction(s: Sink, action: Action) {
     case "acknowledge": return unwrapAudit(await api.POST("/v1/admin/settings/audit-sinks/{id}/oversized/{seq}/acknowledge", { params: { ...params, path: { id: s.id, seq: s.held_oversized_seq! } } }));
   }
 }
-export const verificationDocs = "https://github.com/ncecere/open-mcp-portal/blob/main/docs/audit-sinks.md#35-receiver-rules-added-to-the-slice-1-protocol";
+export const verificationDocs = "https://github.com/bitop-dev/open-mcp-portal/blob/main/docs/audit-sinks.md#35-receiver-rules-added-to-the-slice-1-protocol";

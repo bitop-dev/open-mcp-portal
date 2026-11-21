@@ -17,11 +17,14 @@ arm64. Each file has a cosign bundle (`.sigstore.json`, keyless, signed by the s
 ```sh
 cosign verify-blob omp-v1.2.3-linux-amd64 \
   --bundle omp-v1.2.3-linux-amd64.sigstore.json \
-  --certificate-identity https://github.com/ncecere/open-mcp-portal/.github/workflows/image.yml@refs/tags/v1.2.3 \
+  --certificate-identity https://github.com/bitop-dev/open-mcp-portal/.github/workflows/image.yml@refs/tags/v1.2.3 \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 sha256sum --ignore-missing -c checksums.txt
 chmod +x omp-v1.2.3-linux-amd64 && mv omp-v1.2.3-linux-amd64 /usr/local/bin/omp
 ```
+
+Releases up to v0.15.2 were signed before the repository moved: verify those with
+`--certificate-identity https://github.com/ncecere/open-mcp-portal/.github/workflows/image.yml@refs/tags/<tag>`.
 
 From a checkout: `make build-omp` (writes `bin/omp`), or as a container: `make docker-omp`
 (`docker build --target omp .`; distroless, non-root, entrypoint `/omp`):
