@@ -49,7 +49,11 @@ for cmd in "${tools[@]}"; do
   command -v "$cmd" >/dev/null || fail "${cmd} is not installed"
 done
 
-repo_slug=ncecere/open-mcp-portal
+# The GitHub repository, which also names the image and the keyless signing
+# identity (image.yml checks that its IMAGE agrees). It moved from
+# ncecere/open-mcp-portal after v0.15.2; older releases keep the old image name
+# and identity (docs/deploy.md, "Image").
+repo_slug=bitop-dev/open-mcp-portal
 image="ghcr.io/${repo_slug}"
 ref="${image}@${DIGEST}"
 base="${TAG%%-*}" # v0.1.0-rc.1 -> v0.1.0
@@ -97,7 +101,7 @@ files+=("open-mcp-portal-${TAG}.digest.txt")
 
 # The omp command line: one static binary per platform, built from this
 # checkout, with the tag's version and commit (`omp version`).
-module=github.com/ncecere/open-mcp-portal
+module=github.com/ncecere/open-mcp-portal # the Go module path, which did not move with the repository
 cli_version="${TAG#v}"
 cli_commit="${GITHUB_SHA:-$(git rev-parse HEAD 2>/dev/null || echo unknown)}"
 cli_commit="${cli_commit:0:12}"

@@ -382,4 +382,4 @@ final release). `scripts/github-release.sh` then creates the GitHub Release from
 platform's SBOM, the digest and `checksums.txt`. `open-mcp-portal version` prints `open-mcp-portal 0.1.0 (<commit>)`. The
 Kustomize base points at `ghcr.io/ncecere/open-mcp-portal:v0.1.0`.
 
-[0.1.0]: https://github.com/ncecere/open-mcp-portal/releases/tag/v0.1.0
+[0.1.0]: https://github.com/bitop-dev/open-mcp-portal/releases/tag/v0.1.0

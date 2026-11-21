@@ -26,7 +26,7 @@ resources:
 
 images:
   # The locally built portal image (make docker / the script's docker build).
-  - name: ghcr.io/ncecere/open-mcp-portal
+  - name: ghcr.io/bitop-dev/open-mcp-portal
     newName: omp-smoke/portal
     newTag: local
   - name: omp-smoke/fakemcp

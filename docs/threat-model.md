@@ -47,7 +47,7 @@ The product's invariants are in [SPEC.md](../SPEC.md) §10 and [decisions](decis
 | Audit and call history | `audit_log`, `mcp_calls`, `usage_hourly` (append-only by trigger; retention purges them) |
 | Retired external-platform history | Original `agent_platforms`, relay marks and attribution columns are retained; migration `00034` disables trust/accounts and revokes keys. No active verifier or trust CRUD remains. |
 | Master keys | `ENCRYPTION_KEY`, `ENCRYPTION_KEY_PREVIOUS`, `API_KEY_PEPPER`, `API_KEY_PEPPER_PREVIOUS`, `OIDC_CLIENT_SECRET`, `DATABASE_URL` in the environment or `_FILE` secrets |
-| Release images | `ghcr.io/ncecere/open-mcp-portal`, cosign-signed with SBOM and provenance |
+| Release images | `ghcr.io/bitop-dev/open-mcp-portal` from v0.15.3 (`ghcr.io/ncecere/open-mcp-portal` up to v0.15.2), cosign-signed with SBOM and provenance |
 
 ## 3. Actors
 

@@ -76,7 +76,7 @@ spec:
         # Even a legacy single-role install copies its URL to that Secret;
         # the serving container never receives this credential.
         - name: migrate
-          image: ghcr.io/ncecere/open-mcp-portal
+          image: ghcr.io/bitop-dev/open-mcp-portal
           imagePullPolicy: IfNotPresent
           args: [migrate]
           envFrom:
@@ -104,7 +104,7 @@ spec:
               drop: [ALL]
       containers:
         - name: portal
-          image: ghcr.io/ncecere/open-mcp-portal
+          image: ghcr.io/bitop-dev/open-mcp-portal
           imagePullPolicy: IfNotPresent
           args: [serve]
           envFrom:

@@ -74,6 +74,9 @@ no curation, gateway, grant, expiry or ceiling writer in this Action.
    `checksums.txt`, then verify its `.sigstore.json` bundle using cosign v3.0.2,
    pinned installer commit, exact `image.yml@refs/tags/v0.10.1` certificate identity
    and GitHub's OIDC issuer. Signature failure never falls back to unsigned execution.
+   The identity names the repository that signed the release: `ncecere/open-mcp-portal`
+   for v0.15.2 and earlier (v0.10.1 included), `bitop-dev/open-mcp-portal` after the
+   move. Assets download from `bitop-dev/open-mcp-portal`, where the releases now live.
 2. `omp import -f <private snapshot>` creates missing servers or conditionally
    updates changed fields. Identical config does not bump revisions. Existing
    TLS/SSRF/auth restrictions remain enforced. The child has a private empty HOME,

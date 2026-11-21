@@ -12,6 +12,16 @@ import tempfile
 import urllib.request
 
 VERSION = "v0.10.1"
+RELEASES = "https://github.com/bitop-dev/open-mcp-portal/releases/download"
+
+
+def signing_repository(version):
+    """The repository whose image.yml signed VERSION's assets (the certificate identity).
+
+    The repository moved from ncecere/open-mcp-portal to bitop-dev/open-mcp-portal after
+    v0.15.2; the certificates of earlier releases keep the old name."""
+    parts = tuple(int(n) for n in re.fullmatch(r"v(\d+)\.(\d+)\.(\d+)", version).groups())
+    return "ncecere/open-mcp-portal" if parts <= (0, 15, 2) else "bitop-dev/open-mcp-portal"
 
 
 def main():
@@ -30,7 +40,7 @@ def main():
     name = f"omp-{VERSION}-linux-{arch}"
     for asset in (name, name + ".sigstore.json", "checksums.txt"):
         request = urllib.request.Request(
-            f"https://github.com/ncecere/open-mcp-portal/releases/download/{VERSION}/{asset}")
+            f"{RELEASES}/{VERSION}/{asset}")
         with urllib.request.urlopen(request, timeout=60) as response:
             (root / asset).write_bytes(response.read(64 << 20))
     lines = (root / "checksums.txt").read_text().splitlines()
@@ -41,7 +51,7 @@ def main():
         "cosign", "verify-blob", str(root / name),
         "--bundle", str(root / (name + ".sigstore.json")),
         "--certificate-identity",
-        f"https://github.com/ncecere/open-mcp-portal/.github/workflows/image.yml@refs/tags/{VERSION}",
+        f"https://github.com/{signing_repository(VERSION)}/.github/workflows/image.yml@refs/tags/{VERSION}",
         "--certificate-oidc-issuer", "https://token.actions.githubusercontent.com",
     ], capture_output=True, timeout=120, check=False)
     if result.returncode:

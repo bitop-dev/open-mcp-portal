@@ -14,7 +14,7 @@ schema before this design. The official `ext-tasks` source is pinned at
 [`tasks.md`](https://github.com/modelcontextprotocol/ext-tasks/blob/b3d28aceaa6d49f5f92258e3d06b61ad6f111e84/specification/2026-07-28/tasks.md),
 [`schema.ts`](https://github.com/modelcontextprotocol/ext-tasks/blob/b3d28aceaa6d49f5f92258e3d06b61ad6f111e84/schema/2026-07-28/schema.ts)
 and [`JSON Schema`](https://github.com/modelcontextprotocol/ext-tasks/blob/b3d28aceaa6d49f5f92258e3d06b61ad6f111e84/schema/2026-07-28/schema.json).
-[Specification preflight](https://github.com/ncecere/open-mcp-portal/issues/35#issuecomment-6500904668) records the findings.
+[Specification preflight](https://github.com/bitop-dev/open-mcp-portal/issues/35#issuecomment-6500904668) records the findings.
 
 - Identifier `io.modelcontextprotocol/tasks`, empty object under `clientCapabilities.extensions` in **each
   request's** protocol `_meta`; the same extension is advertised in `server/discover`.

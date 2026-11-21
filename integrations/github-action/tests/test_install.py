@@ -27,7 +27,7 @@ class InstallTests(unittest.TestCase):
             def download(request, timeout):
                 self.assertEqual(timeout, 60)
                 self.assertTrue(request.full_url.startswith(
-                    "https://github.com/ncecere/open-mcp-portal/releases/download/v0.10.1/"))
+                    "https://github.com/bitop-dev/open-mcp-portal/releases/download/v0.10.1/"))
                 return io.BytesIO(assets[request.full_url.rsplit("/", 1)[1]])
             with patch.dict(os.environ, RUNNER_TEMP=directory, GITHUB_OUTPUT=str(output)), \
                  patch.object(install.platform, "machine", return_value="x86_64"), \
@@ -49,6 +49,14 @@ class InstallTests(unittest.TestCase):
                     self.assertIn("https://github.com/ncecere/open-mcp-portal/.github/workflows/image.yml@refs/tags/v0.10.1", args)
                     self.assertIn("https://token.actions.githubusercontent.com", args)
                     self.assertIn("cli=", output.read_text())
+
+    def test_signing_identity_follows_the_repository_move(self):
+        # v0.10.1 (the pinned release) was signed before the repository moved.
+        self.assertEqual(install.signing_repository("v0.10.1"), "ncecere/open-mcp-portal")
+        self.assertEqual(install.signing_repository("v0.15.2"), "ncecere/open-mcp-portal")
+        self.assertEqual(install.signing_repository("v0.15.3"), "bitop-dev/open-mcp-portal")
+        self.assertEqual(install.signing_repository("v0.15.10"), "bitop-dev/open-mcp-portal")
+        self.assertEqual(install.signing_repository("v1.0.0"), "bitop-dev/open-mcp-portal")
 
     def test_signed_exact_release(self):
         self.install()

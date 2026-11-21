@@ -32,11 +32,15 @@ configMapGenerator:
 
 # The release this base shipped with. A tag can move, so overlays should pin
 # the digest from the GitHub Release (verify its cosign signature first; the
-# digest takes precedence over the tag), never `latest`:
+# digest takes precedence over the tag), never `latest`. The name is the match
+# key: an overlay entry with another name silently changes nothing.
 #   images:
-#     - name: ghcr.io/ncecere/open-mcp-portal
+#     - name: ghcr.io/bitop-dev/open-mcp-portal
 #       newTag: v0.15.2
 #       digest: sha256:<digest>
+# Releases up to v0.15.2 were published as ghcr.io/ncecere/open-mcp-portal
+# (before the repository moved); to run one with this base, add
+# `newName: ghcr.io/ncecere/open-mcp-portal` to the overlay's entry.
 images:
-  - name: ghcr.io/ncecere/open-mcp-portal
+  - name: ghcr.io/bitop-dev/open-mcp-portal
     newTag: v0.15.2

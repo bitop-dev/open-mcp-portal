@@ -2,7 +2,7 @@
 
 > **Design history.** Supported SCIM provisioning is implemented as [decision 92](decisions.md); see [SCIM provisioning](scim.md) for current behavior. This page records the preflight analysis and is not current instruction.
 
-**Status: draft review, not accepted policy or implementation.** This document advances [#36](https://github.com/ncecere/open-mcp-portal/issues/36); it does not close its acceptance criteria. The parent separately allocated [decision90/migrations51–52](request-authority-epochs.md) only for a dedicated request-epoch prerequisite and first personal-key writer, whose adjacent-package normal/race/both-role tests, six queued-cycle races and bounded actual previous-image compatibility passed. A separate [decision91/migration53](browser-session-generations.md) now implements the distinct browser-session generation/readers with application proofs pending. There is no SCIM endpoint, provisioner token, provisioning-resource schema or supported IdP integration.
+**Status: draft review, not accepted policy or implementation.** This document advances [#36](https://github.com/bitop-dev/open-mcp-portal/issues/36); it does not close its acceptance criteria. The parent separately allocated [decision90/migrations51–52](request-authority-epochs.md) only for a dedicated request-epoch prerequisite and first personal-key writer, whose adjacent-package normal/race/both-role tests, six queued-cycle races and bounded actual previous-image compatibility passed. A separate [decision91/migration53](browser-session-generations.md) now implements the distinct browser-session generation/readers with application proofs pending. There is no SCIM endpoint, provisioner token, provisioning-resource schema or supported IdP integration.
 
 Reviewed baseline: `cc44f0433c372785dd151f2425a222d812b364c6`, the evidence/image-pin follow-up to independently verified [v0.11.0](releases/v0.11.0.md). The owner resumed work after the release pause: SCIM lifecycle is the main-thread-owned primary task; an independent catalog-search review is the one side lane. The latest owner boundary is to finish SCIM, cut one further independently verified pre-1.0 release, then stop development and worker assignments until explicitly resumed; retained VMs stay up. Earlier isolated drafts are background research, not accepted specifications. The invite lock-order prerequisite shipped in v0.10.1, and API-key/personal-callback final-write hardening shipped in v0.11.0. Neither release implements SCIM.
 
@@ -286,7 +286,7 @@ No implementation slice is authorized by this draft's existence. A token-only fo
 
 ## References
 
-- [Issue36](https://github.com/ncecere/open-mcp-portal/issues/36), originally drafted against v0.2.1; its proposed paths/numbers are not current implementation instructions.
+- [Issue36](https://github.com/bitop-dev/open-mcp-portal/issues/36), originally drafted against v0.2.1; its proposed paths/numbers are not current implementation instructions.
 - [RFC7643: SCIM core schema](https://www.rfc-editor.org/rfc/rfc7643).
 - [RFC7644: SCIM protocol](https://www.rfc-editor.org/rfc/rfc7644).
 - [OpenID Connect Core: subject identifier](https://openid.net/specs/openid-connect-core-1_0.html#SubjectIDTypes).

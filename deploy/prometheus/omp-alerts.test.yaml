@@ -26,7 +26,7 @@ tests:
             exp_annotations:
               summary: A portal replica is not being scraped
               description: "a:9090 has not answered its /metrics scrape for 10 minutes."
-              runbook_url: https://github.com/ncecere/open-mcp-portal/blob/main/docs/phase6-operations.md#ompreplicadown
+              runbook_url: https://github.com/bitop-dev/open-mcp-portal/blob/main/docs/phase6-operations.md#ompreplicadown
   - interval: 1m
     input_series:
       - series: 'up{job="open-mcp-portal", instance="a:9090"}'
@@ -40,7 +40,7 @@ tests:
             exp_annotations:
               summary: Open MCP Portal is down
               description: No replica of the portal has been scraped successfully for 5 minutes.
-              runbook_url: https://github.com/ncecere/open-mcp-portal/blob/main/docs/phase6-operations.md#ompdown
+              runbook_url: https://github.com/bitop-dev/open-mcp-portal/blob/main/docs/phase6-operations.md#ompdown
 
   # Servers failing their health checks for 15 minutes.
   - interval: 1m
@@ -61,7 +61,7 @@ tests:
             exp_annotations:
               summary: Enabled MCP servers are failing their health checks
               description: "2 enabled MCP server(s) failed their latest health check, for 15 minutes."
-              runbook_url: https://github.com/ncecere/open-mcp-portal/blob/main/docs/phase6-operations.md#ompserversfailing
+              runbook_url: https://github.com/bitop-dev/open-mcp-portal/blob/main/docs/phase6-operations.md#ompserversfailing
 
   # Upstream errors: over 20% of tool calls, with enough traffic to mean it.
   - interval: 1m
@@ -83,7 +83,7 @@ tests:
             exp_annotations:
               summary: Over 20% of tool calls fail at the MCP servers
               description: "50.01% of tool calls over the last 10 minutes ended as upstream_error, timeout or too_large."
-              runbook_url: https://github.com/ncecere/open-mcp-portal/blob/main/docs/phase6-operations.md#ompupstreamerrorratiohigh
+              runbook_url: https://github.com/bitop-dev/open-mcp-portal/blob/main/docs/phase6-operations.md#ompupstreamerrorratiohigh
 
   # Retention stops succeeding for one kind.
   - interval: 1m
@@ -102,7 +102,7 @@ tests:
             exp_annotations:
               summary: Retention has not purged a kind of data for over an hour
               description: "Nothing has purged calls successfully for 1h 30m 0s (it runs every RETENTION_INTERVAL, 15 minutes by default)."
-              runbook_url: https://github.com/ncecere/open-mcp-portal/blob/main/docs/phase6-operations.md#ompretentionstale
+              runbook_url: https://github.com/bitop-dev/open-mcp-portal/blob/main/docs/phase6-operations.md#ompretentionstale
 
   - interval: 1m
     input_series:
@@ -124,7 +124,7 @@ tests:
             exp_annotations:
               summary: Audit checkpoints are stale
               description: Checkpoints are enabled with pending entries but none has been signed for an hour.
-              runbook_url: https://github.com/ncecere/open-mcp-portal/blob/main/docs/phase6-operations.md#ompauditcheckpointstale
+              runbook_url: https://github.com/bitop-dev/open-mcp-portal/blob/main/docs/phase6-operations.md#ompauditcheckpointstale
       - eval_time: 80m
         alertname: OMPAuditCheckpointStale
         exp_alerts: []
@@ -146,7 +146,7 @@ tests:
             exp_annotations:
               summary: Audit sink delivery is failing
               description: At least one audit sink has an open failure streak. Inspect sink status and receiver health.
-              runbook_url: https://github.com/ncecere/open-mcp-portal/blob/main/docs/phase6-operations.md#ompauditsinkfailing
+              runbook_url: https://github.com/bitop-dev/open-mcp-portal/blob/main/docs/phase6-operations.md#ompauditsinkfailing
       - eval_time: 16m
         alertname: OMPAuditSinkLag
         exp_alerts:
@@ -157,7 +157,7 @@ tests:
             exp_annotations:
               summary: Audit sink lag exceeds 100000 records
               description: Inspect sink status and restore delivery before retention pressure grows.
-              runbook_url: https://github.com/ncecere/open-mcp-portal/blob/main/docs/phase6-operations.md#ompauditsinklag
+              runbook_url: https://github.com/bitop-dev/open-mcp-portal/blob/main/docs/phase6-operations.md#ompauditsinklag
       - eval_time: 25m
         alertname: OMPAuditSinkFailing
         exp_alerts: []

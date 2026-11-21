@@ -88,6 +88,10 @@ cosign verify ghcr.io/ncecere/open-mcp-portal@sha256:<digest> \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
+**The image moves with the repository.** From v0.15.3 releases are published as `ghcr.io/bitop-dev/open-mcp-portal`
+and signed by `https://github.com/bitop-dev/open-mcp-portal/.github/workflows/image.yml`; v0.15.2 and earlier stay at
+`ghcr.io/ncecere/open-mcp-portal` with the `ncecere` identity. See [image location](docs/deploy.md#image-location-changed-in-v0153).
+
 The Kubernetes base uses `ghcr.io/ncecere/open-mcp-portal:v0.15.2`; the example overlay shows pinning the digest. You
 generate your own `ENCRYPTION_KEY` and `API_KEY_PEPPER` (`openssl rand -base64 32` each); see
 [deploying](docs/deploy.md#required-settings-and-secrets). To try it locally without installing anything, run
@@ -106,7 +110,7 @@ Releases attach signed binaries for linux, darwin and windows; `make build-omp` 
 - [Specification](SPEC.md) and [product decisions](docs/decisions.md)
 - [Status and handoff](docs/status.md)
 - [The `omp` command line](docs/cli.md) and its [declarative file schema](api/omp-v1.schema.json)
-- [Roadmap](docs/roadmap.md): what comes after v0.15.2, in order, with an [issue and implementation plan](https://github.com/ncecere/open-mcp-portal/milestones) for each item
+- [Roadmap](docs/roadmap.md): what comes after v0.15.2, in order, with an [issue and implementation plan](https://github.com/bitop-dev/open-mcp-portal/milestones) for each item
 - Phase designs: [registry](docs/registry.md), [gateways](docs/phase3-gateways.md),
   [client sign-in](docs/phase4-client-auth.md), [delegated credentials](docs/phase5-delegated-credentials.md),
   [operations](docs/phase6-operations.md), [upstream OAuth](docs/phase7-upstream-oauth.md)
@@ -123,8 +127,8 @@ Releases attach signed binaries for linux, darwin and windows; `make build-omp` 
 
 ## Questions, feedback and compatibility reports
 
-- **Questions and ideas:** [GitHub Discussions](https://github.com/ncecere/open-mcp-portal/discussions).
-- **Bugs and feature requests:** [issues](https://github.com/ncecere/open-mcp-portal/issues/new/choose), with a form for each.
+- **Questions and ideas:** [GitHub Discussions](https://github.com/bitop-dev/open-mcp-portal/discussions).
+- **Bugs and feature requests:** [issues](https://github.com/bitop-dev/open-mcp-portal/issues/new/choose), with a form for each.
 - **Does your MCP client work?** Claude Code and pi have been run against the portal; VS Code, Cursor and others haven't yet. The
   [client compatibility page](https://docs.omp.bitop.dev/docs/use/client-compatibility) has a ten-minute checklist and a report form.
 

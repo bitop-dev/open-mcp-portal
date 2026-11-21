@@ -13,7 +13,7 @@ numbers and file paths are suggestions, not instructions to overwrite existing c
 
 **v0.14.0 (2026-11-06) completed the batch before those:** #72 definition scanning and #73 findings UI (shadow only; #70 closed), and #38 audit streaming slice 1 (off by default).
 
-**v0.11.0 (previous release) is fully published and independently verified**, including final main/tag/follow-up CI, artifacts and actual runtime proofs; see [release notes](releases/v0.11.0.md). [#71 is closed with scoped acceptance](https://github.com/ncecere/open-mcp-portal/issues/71#issuecomment-6549256409). #47 remains partial: Action shipped, Terraform/resources/delete-scope/vendor gates unfinished. Other exported corpus/audit/key-provider branches remain unmerged and unaccepted, including preserved full-suite failures and partial diagnostic evidence. Keep all reusable Boat VMs up; do not automatically integrate those branches or broaden the approved batch.
+**v0.11.0 (previous release) is fully published and independently verified**, including final main/tag/follow-up CI, artifacts and actual runtime proofs; see [release notes](releases/v0.11.0.md). [#71 is closed with scoped acceptance](https://github.com/bitop-dev/open-mcp-portal/issues/71#issuecomment-6549256409). #47 remains partial: Action shipped, Terraform/resources/delete-scope/vendor gates unfinished. Other exported corpus/audit/key-provider branches remain unmerged and unaccepted, including preserved full-suite failures and partial diagnostic evidence. Keep all reusable Boat VMs up; do not automatically integrate those branches or broaden the approved batch.
 
 The owner explicitly re-authorized parallel Boat/Codex coding agents with main-thread review, integration and release authority. **Keep new coding sandboxes up for reuse after export**, share names immediately, use fresh scoped branches/conversations and one writer per sandbox, and expose provider TTL/idle-stop limits. Do not forward production/infrastructure credentials or start unbounded/recursive delegation. This supersedes historical main-thread-only mode.
 
@@ -52,12 +52,12 @@ independently verified and #33 closed**. Four complete mandatory-PostgreSQL norm
 modes (3,440s), all853 web tests/deployment/advisories, source/published browser/secondary-JWT/quota/health,
 previous-image schema47 compatibility, main/tag CI, both CNIs and signed native publication/independent
 artifact/runtime checks passed. Published mobile/dialog axe incompletes remain. See [status](status.md),
-[release notes](releases/v0.8.0.md) and [acceptance](https://github.com/ncecere/open-mcp-portal/issues/33#issuecomment-6499585660).
+[release notes](releases/v0.8.0.md) and [acceptance](https://github.com/bitop-dev/open-mcp-portal/issues/33#issuecomment-6499585660).
 **v0.9.0 is published and independently verified:** #35's released specification was confirmed and its first
 ungoverned modern-task stage shipped. All four local PostgreSQL role-mode suites, web/deployment/advisories,
 actual v0.8.0/schema48 compatibility, source/published runtime/browser, main CI, both-CNI smoke, upgrade/
 rollback/canary, load and native publication/artifact verification passed. Final tag CI/upgrade passed and
-[#35 is closed with scoped acceptance](https://github.com/ncecere/open-mcp-portal/issues/35#issuecomment-6514201092). #43's Kubernetes gates and #52's scanning design are closed; #70–#73 track the first scanning
+[#35 is closed with scoped acceptance](https://github.com/bitop-dev/open-mcp-portal/issues/35#issuecomment-6514201092). #43's Kubernetes gates and #52's scanning design are closed; #70–#73 track the first scanning
 implementation slice. Inspect current Git/CI rather than resuming an old feature branch.
 As of 2026-11-21 there are 24 open issues: 16 development and eight real-world verification issues. #40/#46 are shipped in verified v0.10.0 and closed. Preserve CLI curation/governance/marker/ceiling comparison-only semantics and exact grant-expiry refusals; #47 must not widen token authority implicitly.
 The owner authorized ready pre-1.0 releases; v1.0.0 remains their explicit decision. Follow the order below

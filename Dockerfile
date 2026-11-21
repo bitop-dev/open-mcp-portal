@@ -68,7 +68,7 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
 FROM gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab AS omp
 LABEL org.opencontainers.image.title="omp" \
       org.opencontainers.image.description="The Open MCP Portal command line" \
-      org.opencontainers.image.source="https://github.com/ncecere/open-mcp-portal"
+      org.opencontainers.image.source="https://github.com/bitop-dev/open-mcp-portal"
 COPY --from=build-omp /out/omp /omp
 USER 65532:65532
 ENTRYPOINT ["/omp"]
@@ -82,7 +82,7 @@ ARG VERSION=dev
 ARG COMMIT=unknown
 LABEL org.opencontainers.image.title="open-mcp-portal" \
       org.opencontainers.image.description="Open MCP Portal: a self-hosted portal for governed access to a company's MCP servers" \
-      org.opencontainers.image.source="https://github.com/ncecere/open-mcp-portal" \
+      org.opencontainers.image.source="https://github.com/bitop-dev/open-mcp-portal" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${COMMIT}"
 COPY --from=build /out/open-mcp-portal /open-mcp-portal
