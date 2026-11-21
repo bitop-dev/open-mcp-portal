@@ -54,6 +54,25 @@ describe("Admin audit stream", () => {
     expect(screen.getAllByText("11")).toHaveLength(3);
     expect(screen.getAllByText(/range_expired ·/)).toHaveLength(3);
   });
+  it("shows whether the held oversized envelope was sent, failed or is pending", async () => {
+    const data = status(); data.sinks = [
+      { ...sink, id: "s1", name: "Sent", held_notice: { delivered_at: "2026-11-06T10:00:00Z", failed_at: null, failure_class: null } },
+      { ...sink, id: "s2", name: "Failing", held_notice: { delivered_at: null, failed_at: "2026-11-06T11:00:00Z", failure_class: "timeout" } },
+      { ...sink, id: "s3", name: "Pending", held_notice: null },
+      { ...sink, id: "s4", name: "Older replica" },
+      { ...sink, id: "s5", name: "Not held", held_oversized_seq: null, held_notice: null },
+    ];
+    const { container } = setup(data); await loaded();
+    const row = (name: string) => screen.getByText(name).closest("tr")!;
+    expect(within(row("Sent")).getByText(/Sent to the receiver/)).toHaveTextContent(/Not resent while held\./);
+    expect(within(row("Sent")).getByText(/Sent to the receiver/).querySelector("time")).toHaveAttribute("datetime", "2026-11-06T10:00:00.000Z");
+    expect(within(row("Failing")).getByText(/Sending failed/)).toHaveTextContent(/\(timeout\)\. Retrying with backoff\./);
+    expect(within(row("Pending")).getByText("Not yet sent to the receiver.")).toBeInTheDocument();
+    for (const name of ["Older replica", "Not held"]) expect(within(row(name)).queryByText(/to the receiver|Sending failed/)).not.toBeInTheDocument();
+    expect(within(row("Older replica")).getByText("11")).toBeInTheDocument();
+    expect(within(row("Not held")).getByText("None")).toBeInTheDocument();
+    expect(await axe(container)).toHaveNoViolations();
+  });
   it("creates and shows a copyable secret once, without caching it", async () => {
     const u = userEvent.setup();
     const { qc } = setup(status(), { "POST /v1/admin/settings/audit-sinks": () => ({ sink, secret: "create-secret-once" }) }); await loaded();

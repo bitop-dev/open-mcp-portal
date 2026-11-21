@@ -6,6 +6,10 @@ Notable changes to Open MCP Portal, one entry per release. Design notes for each
 The project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Before 1.0, minor releases may include
 breaking changes; the entry says how to adapt.
 
+## [Unreleased]
+
+- **Held oversized rows are delivered once (#93).** A required full-profile audit sink held at an oversized row now sends that row's envelope once, instead of on every pass until an admin acknowledges it. The delivery result is recorded with the sink: a failed send is still retried with the usual backoff, an acknowledgement ends the hold and its record, and a settings edit (enable or disable, destination, secret, profile or required) sends the envelope once more to the new configuration. **Admin › Audit stream** shows, next to the held sequence, whether and when the receiver was sent it, or the last failure. Delivery stays in order and at least once; the retention hold and the acknowledgement are unchanged. Migration `00067` adds a protected table and restates three sink functions with the same signatures. It needs no gate: the previous release runs unchanged against the new schema and, as a sender, keeps resending the held envelope as before.
+
 ## [0.15.2] - 2026-11-10
 
 - **Faster gateway requests.** A `tools/call` makes about a third fewer database round trips (47 to 33 on a team gateway, 40 to 31 on a platform gateway) and a `tools/list` about 40% fewer (13 to 8, 10 to 7), with every access check still read live. Evaluating a gateway's selection no longer re-projects each curated tool on every read: for 200 tools with 40 curated, 57 ms and 10.7 MB of allocations became 3.5 ms and 1.3 MB.

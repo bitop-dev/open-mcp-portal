@@ -454,6 +454,27 @@ medium gaps. Where this section and 4.1–4.5 differ, **this section wins.**
   - writes its audit entry in the same transaction.
 
   The admin acknowledges after retrieving the row. Nobody else's fetch can release the hold.
+- **Held-envelope marker (#93, migration `00067`).** Before #93 the sender redelivered the held envelope on every pass
+  until the acknowledgement: allowed under at-least-once delivery, but noisy for the receiver. Now
+  `omp_audit_ext.sink_holds` keeps one row per sink: `held_seq`, the `sink_revision` it was attempted under, and the
+  latest result, `delivered_at` or `failed_at` with `failure_class`.
+  - **Writer and fencing.** Only `finish_attempt` writes it, under the same floor → sink locks and the same consumed
+    attempt token that move the cursor, from the leader's own session. A stale leader, a stale token or a second
+    replica can therefore neither deliver under a new token nor mark. The runtime role may only read the table.
+  - **Results.** Outcome `held` records the delivery. A failed single-row attempt of a holdable oversized row (required,
+    full profile, `Flags & 2`) records the failure; the latest result wins, and the existing backoff and streak rules
+    apply unchanged. Outcome `ok` clears the row.
+  - **Skip.** Before reading the range, the sender skips a sink whose marker matches `held_seq = cursor_seq + 1`,
+    `sink_revision = revision` and has `delivered_at`. It makes no attempt, so the cursor, the hold, the in-flight slot
+    and the failure state are untouched. Any other state sends the envelope as before.
+  - **Clearing.** The marker counts only while it matches the cursor and revision, so it can never outlive its hold:
+    `acknowledge_oversized` moves the cursor and deletes it, `update_sink` (enable or disable, destination, secret,
+    profile, `required`) bumps the revision and deletes it, so the new configuration is sent the envelope once,
+    and deleting the sink cascades. The next oversized row gets its own marker. Changes that do not reset delivery
+    state today keep it: the global sinks gate, `resume_sink`, and key rotation re-sealing the same URL and secret.
+  - **Rollout.** Additive, with no gate. A v0.15.2 sender never reads the table and resends the held envelope on
+    every pass, as before. It calls the same `finish_attempt`, which keeps the marker current for newer senders. The
+    receiver-visible change is fewer identical duplicates of the held envelope.
 
 **Purge (restated `omp_purge_audit_log`, same signature, owner, `SECURITY DEFINER`, `search_path`, UTC and ACLs).**
 1. Validate arguments and read retention settings.
@@ -515,6 +536,9 @@ key-rotation utilities now covers 2a utilities as well as v0.14.0, and has a reg
     shape.
 - **`00064` (2b):** `sinks` and the attempt, gap, resume, oversized and management functions with their manifest rows;
   `enable-sinks` gating state; notification CHECK constraint expansions; the purge function restated per 4.6.
+- **`00067` (#93):** `sink_holds` with its manifest row (runtime `select`), and `finish_attempt`,
+  `acknowledge_oversized` and `update_sink` restated with the same signatures, owner, `SECURITY DEFINER` settings
+  and ACLs to maintain it (4.2, oversized rows).
 
 ## 6. Metrics and alerts
 

@@ -806,6 +806,15 @@ type OmpAuditExtSink struct {
 	GapLast              *int64
 }
 
+type OmpAuditExtSinkHold struct {
+	SinkID       uuid.UUID
+	HeldSeq      int64
+	SinkRevision int64
+	DeliveredAt  *time.Time
+	FailedAt     *time.Time
+	FailureClass *string
+}
+
 type OmpAuditExtSinkSetting struct {
 	Singleton        bool
 	Enabled          bool

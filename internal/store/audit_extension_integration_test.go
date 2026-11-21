@@ -38,6 +38,11 @@ func TestAuditExtensionManifestBoundary(t *testing.T) {
 	roleExec(t, runtime, `UPDATE omp_audit_ext.sinks SET url_cipher='\x01',secret_cipher='\x02',secret_previous_cipher=NULL`)
 	roleDenied(t, runtime, `UPDATE omp_audit_ext.manifest SET privileges='{}'`, "42501")
 	roleDenied(t, runtime, `SELECT omp_audit_ext.enable_checkpoints('0.15.0')`, "42501")
+	// The held-envelope marker (00067) is read-only for the runtime role; only finish_attempt writes it.
+	roleExec(t, runtime, `SELECT count(*) FROM omp_audit_ext.sink_holds`)
+	roleDenied(t, runtime, `INSERT INTO omp_audit_ext.sink_holds(sink_id,held_seq,sink_revision,delivered_at) VALUES(gen_random_uuid(),1,1,now())`, "42501")
+	roleDenied(t, runtime, `UPDATE omp_audit_ext.sink_holds SET delivered_at=now()`, "42501")
+	roleDenied(t, runtime, `DELETE FROM omp_audit_ext.sink_holds`, "42501")
 	roleExec(t, owner, `CREATE TABLE omp_audit_ext.unlisted(x int)`)
 	inspect(false)
 	c, err := owner.Acquire(ctx)
@@ -51,7 +56,7 @@ func TestAuditExtensionManifestBoundary(t *testing.T) {
 	}
 	roleExec(t, owner, `DROP TABLE omp_audit_ext.unlisted`)
 	q := pgx.Identifier{role}.Sanitize()
-	for _, grant := range []string{"UPDATE ON omp_audit_ext.sinks", "UPDATE(cursor_seq) ON omp_audit_ext.sinks", "UPDATE ON omp_audit_ext.sink_settings", "EXECUTE ON FUNCTION omp_audit_ext.set_sinks_enabled(boolean,text)", "UPDATE ON omp_audit_ext.checkpoint_keys", "UPDATE (state) ON omp_audit_ext.checkpoint_keys", "INSERT ON omp_audit_ext.manifest", "EXECUTE ON FUNCTION omp_audit_ext.enable_checkpoints(text)", "SELECT ON omp_audit_ext.checkpoint_keys WITH GRANT OPTION"} {
+	for _, grant := range []string{"UPDATE ON omp_audit_ext.sinks", "UPDATE(cursor_seq) ON omp_audit_ext.sinks", "UPDATE ON omp_audit_ext.sink_settings", "EXECUTE ON FUNCTION omp_audit_ext.set_sinks_enabled(boolean,text)", "UPDATE ON omp_audit_ext.checkpoint_keys", "UPDATE (state) ON omp_audit_ext.checkpoint_keys", "INSERT ON omp_audit_ext.manifest", "EXECUTE ON FUNCTION omp_audit_ext.enable_checkpoints(text)", "SELECT ON omp_audit_ext.checkpoint_keys WITH GRANT OPTION", "INSERT ON omp_audit_ext.sink_holds", "UPDATE (delivered_at) ON omp_audit_ext.sink_holds"} {
 		// WITH GRANT OPTION belongs after the grantee.
 		if grant == "SELECT ON omp_audit_ext.checkpoint_keys WITH GRANT OPTION" {
 			roleExec(t, owner, "GRANT SELECT ON omp_audit_ext.checkpoint_keys TO "+q+" WITH GRANT OPTION")

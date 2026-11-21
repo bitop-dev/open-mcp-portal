@@ -119,6 +119,13 @@ func (s *Sender) pass(ctx context.Context, leader *pgx.Conn) error {
 		if time.Now().Before(sinkDue(candidate)) {
 			continue
 		}
+		sent, e := heldNoticeSent(ctx, s.Pool, candidate)
+		if e != nil {
+			return e
+		}
+		if sent {
+			continue
+		}
 		if e = s.deliver(ctx, leader, id); e != nil {
 			passErr = e
 			if leader.IsClosed() {
@@ -271,6 +278,23 @@ func (s *Sender) deliver(ctx context.Context, leader *pgx.Conn, id uuid.UUID) er
 		observability.AuditStreamSinkDeliveries.WithLabelValues("webhook", result).Inc()
 	}
 	return err
+}
+
+// heldNoticeSent reports whether this sink is held at an oversized row whose
+// envelope finish_attempt already recorded as delivered under the current
+// revision (#93). Skipping keeps the hold and the cursor exactly as they are:
+// only the duplicate POST and its begin/finish are avoided. A recorded failure,
+// an acknowledgement (cursor moves) or a settings edit (revision moves) makes
+// the marker not match, and the envelope is attempted as before.
+func heldNoticeSent(ctx context.Context, q interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}, sink dbgen.OmpAuditExtSink) (bool, error) {
+	if sink.GapFirst != nil || !sink.Required || sink.Profile != "full" {
+		return false, nil
+	}
+	var sent bool
+	err := q.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM omp_audit_ext.sink_holds WHERE sink_id=$1 AND held_seq=$2 AND sink_revision=$3 AND delivered_at IS NOT NULL)`, sink.ID, sink.CursorSeq+1, sink.Revision).Scan(&sent)
+	return sent, err
 }
 func (s *Sender) post(ctx context.Context, sink dbgen.OmpAuditExtSink, kind string, first, last int64, stream uuid.UUID, body []byte) string {
 	raw, err := s.Box.Open(sink.UrlCipher, SinkAAD(sink.ID, "url"))
