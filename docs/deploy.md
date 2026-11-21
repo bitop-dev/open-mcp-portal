@@ -19,12 +19,12 @@ are `ghcr.io/ncecere/open-mcp-portal`, see [below](#image-location-changed-in-v0
 (linux/amd64 and linux/arm64) with SBOM and provenance attestations, signed with cosign (keyless, GitHub Actions OIDC):
 
 ```sh
-docker pull ghcr.io/ncecere/open-mcp-portal:v0.15.2
-docker run --rm ghcr.io/ncecere/open-mcp-portal:v0.15.2 version     # open-mcp-portal 0.15.2 (<commit>)
+docker pull ghcr.io/bitop-dev/open-mcp-portal:v0.15.3
+docker run --rm ghcr.io/bitop-dev/open-mcp-portal:v0.15.3 version     # open-mcp-portal 0.15.3 (<commit>)
 
 # Pin the digest from the GitHub Release, and verify it first (cosign v3 or newer):
-cosign verify ghcr.io/ncecere/open-mcp-portal@sha256:<digest> \
-  --certificate-identity https://github.com/ncecere/open-mcp-portal/.github/workflows/image.yml@refs/tags/v0.15.2 \
+cosign verify ghcr.io/bitop-dev/open-mcp-portal@sha256:<digest> \
+  --certificate-identity https://github.com/bitop-dev/open-mcp-portal/.github/workflows/image.yml@refs/tags/v0.15.3 \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
@@ -313,7 +313,7 @@ pins it), `SHUTDOWN_DELAY=10s`, `SHUTDOWN_TIMEOUT=125s`, and placeholders for `A
 
 ### Image
 
-The base references `ghcr.io/bitop-dev/open-mcp-portal` and sets its tag to `v0.15.2` through a Kustomize `images:` entry.
+The base references `ghcr.io/bitop-dev/open-mcp-portal` and sets its tag to `v0.15.3` through a Kustomize `images:` entry.
 A tag can move, so pin the digest of the release you verified in your overlay (the digest wins over the tag). The entry's
 `name` must be the base's image name exactly: an entry with another name is ignored without an error
 ([image location](#image-location-changed-in-v0153)). `make k8s-validate` checks this for the overlays in this repository.
@@ -321,10 +321,12 @@ A tag can move, so pin the digest of the release you verified in your overlay (t
 ```yaml
 images:
   - name: ghcr.io/bitop-dev/open-mcp-portal
-    newName: ghcr.io/ncecere/open-mcp-portal # only for v0.15.2 and earlier
-    newTag: v0.15.2
+    newTag: v0.15.3
     digest: sha256:<digest from the GitHub Release>
 ```
+
+For v0.15.2 or earlier (a rollback), add `newName: ghcr.io/ncecere/open-mcp-portal` to the entry, with that release's tag
+and digest.
 
 ### What the base deploys
 

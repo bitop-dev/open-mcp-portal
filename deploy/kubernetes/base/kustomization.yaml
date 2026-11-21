@@ -36,11 +36,11 @@ configMapGenerator:
 # key: an overlay entry with another name silently changes nothing.
 #   images:
 #     - name: ghcr.io/bitop-dev/open-mcp-portal
-#       newTag: v0.15.2
+#       newTag: v0.15.3
 #       digest: sha256:<digest>
 # Releases up to v0.15.2 were published as ghcr.io/ncecere/open-mcp-portal
 # (before the repository moved); to run one with this base, add
 # `newName: ghcr.io/ncecere/open-mcp-portal` to the overlay's entry.
 images:
   - name: ghcr.io/bitop-dev/open-mcp-portal
-    newTag: v0.15.2
+    newTag: v0.15.3
