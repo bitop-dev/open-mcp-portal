@@ -27,6 +27,14 @@ through `/v1/admin/audit/entries/{seq}/full`, preserve it, then POST `/{id}/over
 revision. The database validates the exact next oversized sequence, advances one, and audits atomically. Optional
 sinks deliver the envelope and advance automatically.
 
+While a sink is held, the envelope is sent once. Admin › Audit stream shows the held sequence and either when the
+receiver was sent it ("Sent to the receiver …"), the last failure and its class (retried with the usual backoff), or
+"Not yet sent to the receiver". The status API reports the same as `held_notice` (`delivered_at`, or `failed_at`
+with `failure_class`) next to `held_oversized_seq`. Editing the sink (including disabling and re-enabling it, or
+changing its URL or secret) sends the envelope once more under the new revision. During a rolling upgrade a replica
+on 0.15.2 or earlier that becomes the sender resends the held envelope on every pass, as those releases always did;
+receivers already discard identical duplicates.
+
 Verify `X-OMP-Signature` against the exact request body before parsing. The signing key is the displayed secret text
 (not its base64-decoded bytes). Accept any matching `v1` during rotation, use constant-time comparison and reject stale
 timestamps, for example in Python:

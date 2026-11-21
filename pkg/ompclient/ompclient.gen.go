@@ -5316,7 +5316,7 @@ type ClientInterface interface {
 
 	// AdminAuditStreamStatus Audit stream status (platform admins, auditors or platform:read)
 	//
-	// The stream tip and checkpoint state, `sealer_enabled` (AUDIT_STREAM_ENABLED on the replica that answered), the sink gate, every sink's secret-free view (including `last_ok_at`, lag and retention effect), every pull consumer and checkpoint key metadata. Never contains a sink URL or secret.
+	// The stream tip and checkpoint state, `sealer_enabled` (AUDIT_STREAM_ENABLED on the replica that answered), the sink gate, every sink's secret-free view (including `last_ok_at`, lag and retention effect), every pull consumer and checkpoint key metadata. Never contains a sink URL or secret. A required full-profile sink held at an oversized row has `held_oversized_seq` and `held_notice`: null until its envelope is attempted, then `delivered_at` (sent; not resent while held) or `failed_at` with `failure_class` (retried with backoff).
 	//
 	// Corresponds with GET /v1/admin/audit/stream/status (the `AdminAuditStreamStatus` operationId).
 	AdminAuditStreamStatus(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5929,7 +5929,7 @@ func (c *Client) AdminAuditAck(ctx context.Context, body AdminAuditAckJSONReques
 
 // AdminAuditStreamStatus Audit stream status (platform admins, auditors or platform:read)
 //
-// The stream tip and checkpoint state, `sealer_enabled` (AUDIT_STREAM_ENABLED on the replica that answered), the sink gate, every sink's secret-free view (including `last_ok_at`, lag and retention effect), every pull consumer and checkpoint key metadata. Never contains a sink URL or secret.
+// The stream tip and checkpoint state, `sealer_enabled` (AUDIT_STREAM_ENABLED on the replica that answered), the sink gate, every sink's secret-free view (including `last_ok_at`, lag and retention effect), every pull consumer and checkpoint key metadata. Never contains a sink URL or secret. A required full-profile sink held at an oversized row has `held_oversized_seq` and `held_notice`: null until its envelope is attempted, then `delivered_at` (sent; not resent while held) or `failed_at` with `failure_class` (retried with backoff).
 //
 // Corresponds with GET /v1/admin/audit/stream/status (the `AdminAuditStreamStatus` operationId).
 func (c *Client) AdminAuditStreamStatus(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -10872,7 +10872,7 @@ type ClientWithResponsesInterface interface {
 
 	// AdminAuditStreamStatusWithResponse Audit stream status (platform admins, auditors or platform:read)
 	//
-	// The stream tip and checkpoint state, `sealer_enabled` (AUDIT_STREAM_ENABLED on the replica that answered), the sink gate, every sink's secret-free view (including `last_ok_at`, lag and retention effect), every pull consumer and checkpoint key metadata. Never contains a sink URL or secret.
+	// The stream tip and checkpoint state, `sealer_enabled` (AUDIT_STREAM_ENABLED on the replica that answered), the sink gate, every sink's secret-free view (including `last_ok_at`, lag and retention effect), every pull consumer and checkpoint key metadata. Never contains a sink URL or secret. A required full-profile sink held at an oversized row has `held_oversized_seq` and `held_notice`: null until its envelope is attempted, then `delivered_at` (sent; not resent while held) or `failed_at` with `failure_class` (retried with backoff).
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16039,7 +16039,7 @@ func (c *ClientWithResponses) AdminAuditAckWithResponse(ctx context.Context, bod
 
 // AdminAuditStreamStatusWithResponse Audit stream status (platform admins, auditors or platform:read)
 //
-// The stream tip and checkpoint state, `sealer_enabled` (AUDIT_STREAM_ENABLED on the replica that answered), the sink gate, every sink's secret-free view (including `last_ok_at`, lag and retention effect), every pull consumer and checkpoint key metadata. Never contains a sink URL or secret.
+// The stream tip and checkpoint state, `sealer_enabled` (AUDIT_STREAM_ENABLED on the replica that answered), the sink gate, every sink's secret-free view (including `last_ok_at`, lag and retention effect), every pull consumer and checkpoint key metadata. Never contains a sink URL or secret. A required full-profile sink held at an oversized row has `held_oversized_seq` and `held_notice`: null until its envelope is attempted, then `delivered_at` (sent; not resent while held) or `failed_at` with `failure_class` (retried with backoff).
 //
 // Returns a wrapper object for the known response body format(s).
 //

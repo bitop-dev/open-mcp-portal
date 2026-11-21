@@ -28,7 +28,9 @@ import (
 
 // This explicit projection is shared by responses and audit metadata. Never
 // serialize a database sink model: it carries sealed destination credentials.
-const sinkView = `jsonb_build_object('id',id,'name',name,'kind',kind,'profile',profile,'required',required,'enabled',enabled,'batch_max_records',batch_max_records,'revision',revision,'url_hint',url_hint,'cursor_seq',cursor_seq,'state',state,'last_error_class',last_error_class,'consecutive_failures',consecutive_failures,'last_ok_at',last_ok_at,'gap_first',gap_first,'gap_last',gap_last,'lag',greatest(0,(SELECT last_seq FROM omp_audit.state)-cursor_seq),'retention_effect',CASE WHEN NOT required THEN 'not holding' WHEN NOT enabled THEN 'holding-while-disabled' ELSE 'holding' END,'held_oversized_seq',CASE WHEN required AND profile='full' AND EXISTS(SELECT 1 FROM omp_audit.chain WHERE seq=cursor_seq+1 AND flags&2<>0) THEN cursor_seq+1 END)`
+// held_notice is the delivery result of the held oversized envelope (#93),
+// present only while the marker matches the current cursor and revision.
+const sinkView = `jsonb_build_object('id',id,'name',name,'kind',kind,'profile',profile,'required',required,'enabled',enabled,'batch_max_records',batch_max_records,'revision',revision,'url_hint',url_hint,'cursor_seq',cursor_seq,'state',state,'last_error_class',last_error_class,'consecutive_failures',consecutive_failures,'last_ok_at',last_ok_at,'gap_first',gap_first,'gap_last',gap_last,'lag',greatest(0,(SELECT last_seq FROM omp_audit.state)-cursor_seq),'retention_effect',CASE WHEN NOT required THEN 'not holding' WHEN NOT enabled THEN 'holding-while-disabled' ELSE 'holding' END,'held_oversized_seq',CASE WHEN required AND profile='full' AND EXISTS(SELECT 1 FROM omp_audit.chain WHERE seq=cursor_seq+1 AND flags&2<>0) THEN cursor_seq+1 END,'held_notice',(SELECT jsonb_build_object('delivered_at',h.delivered_at,'failed_at',h.failed_at,'failure_class',h.failure_class) FROM omp_audit_ext.sink_holds h WHERE h.sink_id=sinks.id AND h.held_seq=sinks.cursor_seq+1 AND h.sink_revision=sinks.revision))`
 
 func (a *api) sinkRoutes() []route {
 	return []route{
