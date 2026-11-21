@@ -7,7 +7,11 @@ numbers and file paths are suggestions, not instructions to overwrite existing c
 
 ## Current batch
 
-**v0.14.0 (2026-11-06) completed the resumed batch:** #72 definition scanning and #73 findings UI (shadow only; #70 closed), and #38 audit streaming slice 1 (off by default). Next on the ordered backlog: #38 slices 2–4 (audit lane, then #39), #72's measurement gaps, #42 Helm when a pilot needs it, and the real-world verification lane below. See [status](status.md) "Current batch". Parked: `parked/terraform-provider`, `parked/keyprovider-transit`.
+**In progress (2026-11-21): a maintenance batch:** Go 1.26.11 (GO-2026-6859 in `net/http`) with the pending dependency updates, #106 (call-log purge scan, migration 66) and #107 (database pool size and two provider-credential fixes). Next on the ordered backlog: #93, #105 (upstream connection reuse; the owner chose HTTP/2-only pooling with fresh connections for calls that spent an approval), #38 slices 3–4 (audit lane, then #39), #48 and #50, the rest of #49, #51, #42 Helm when a pilot needs it, and the real-world verification lane below. See [status](status.md) "Current batch". Parked: `parked/terraform-provider`, `parked/keyprovider-transit`.
+
+**v0.15.2 (2026-11-10)** was the hardening pass, and **v0.15.1 (2026-11-06)** shipped #38 slice 2 (signed checkpoints and webhook sinks).
+
+**v0.14.0 (2026-11-06) completed the batch before those:** #72 definition scanning and #73 findings UI (shadow only; #70 closed), and #38 audit streaming slice 1 (off by default).
 
 **v0.11.0 (previous release) is fully published and independently verified**, including final main/tag/follow-up CI, artifacts and actual runtime proofs; see [release notes](releases/v0.11.0.md). [#71 is closed with scoped acceptance](https://github.com/ncecere/open-mcp-portal/issues/71#issuecomment-6549256409). #47 remains partial: Action shipped, Terraform/resources/delete-scope/vendor gates unfinished. Other exported corpus/audit/key-provider branches remain unmerged and unaccepted, including preserved full-suite failures and partial diagnostic evidence. Keep all reusable Boat VMs up; do not automatically integrate those branches or broaden the approved batch.
 
@@ -55,7 +59,7 @@ actual v0.8.0/schema48 compatibility, source/published runtime/browser, main CI,
 rollback/canary, load and native publication/artifact verification passed. Final tag CI/upgrade passed and
 [#35 is closed with scoped acceptance](https://github.com/ncecere/open-mcp-portal/issues/35#issuecomment-6514201092). #43's Kubernetes gates and #52's scanning design are closed; #70–#73 track the first scanning
 implementation slice. Inspect current Git/CI rather than resuming an old feature branch.
-There are 23 open issues:15 development and eight real-world verification issues. #40/#46 are shipped in verified v0.10.0 and closed. Preserve CLI curation/governance/marker/ceiling comparison-only semantics and exact grant-expiry refusals; #47 must not widen token authority implicitly.
+As of 2026-11-21 there are 24 open issues: 16 development and eight real-world verification issues. #40/#46 are shipped in verified v0.10.0 and closed. Preserve CLI curation/governance/marker/ceiling comparison-only semantics and exact grant-expiry refusals; #47 must not widen token authority implicitly.
 The owner authorized ready pre-1.0 releases; v1.0.0 remains their explicit decision. Follow the order below
 without closing evidence-gated issues on fixture results or claiming unfinished branch work is released.
 

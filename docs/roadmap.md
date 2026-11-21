@@ -77,7 +77,7 @@ v1.0.0 decision. A new agent should read [agent-handoff.md](agent-handoff.md) an
 3. **Governance foundations shipped.** #31 exact-call approvals shipped in v0.5.0,
    with defaults recorded in decision 82; #32 access requests shipped in v0.6.0 under decision83.
    #33 quota/concurrency/read-retry/breaker shipped in v0.7.0; separate origin-isolated failover shipped in
-   verified v0.8.0 and #33 is closed. #35's released extension was confirmed and its first stage shipped in verified v0.9.0; #40 governance and #46 CLI shipped in verified v0.10.0. #36's draft still needs correction/decision. Keep trusted classification,
+   verified v0.8.0 and #33 is closed. #35's released extension was confirmed and its first stage shipped in verified v0.9.0; #40 governance and #46 CLI shipped in verified v0.10.0. #36 SCIM shipped in verified v0.12.0 (decision 92). Keep trusted classification,
    current authority/deadlines, independent endpoint credentials and the ban on replaying spent approvals.
 4. **Operations before scale.** #44 database roles and #43's upgrade/ingress/restore/load gates shipped and are closed. Helm (#42) uses the existing static `ENCRYPTION_KEY` handling; #41's key-provider work is deferred and no longer blocks it. See the implementation order for staged lifecycle/audit dependencies.
 
@@ -152,7 +152,7 @@ Making "all MCP servers" true, then governing what runs. Milestone: [v0.3](https
 
 Leavers lose access automatically, the audit trail leaves the database, and operating it at scale is tested. Milestone: [v0.4](https://github.com/ncecere/open-mcp-portal/milestone/3).
 
-**Order:** #37 and #44 are expand-only and off by default, so they can ship early as patch releases, as can the export parts of #38. Make the gates trustworthy next: the upgrade, ingress, OIDC and restore parts of #43, then #42, which should not be released until that CI proves it. #40 shipped/closed in v0.10.0; #41 is deferred (no direct Vault/OpenBao integration for now). Next correct/decide #36's draft; audit sinks come before #39, because erasure reuses the deprovision path and holds need the audit tail. #45 goes last, and only once a real client sends it.
+**Order:** #37 and #44 are expand-only and off by default, so they can ship early as patch releases, as can the export parts of #38. Make the gates trustworthy next: the upgrade, ingress, OIDC and restore parts of #43, then #42, which should not be released until that CI proves it. #40 shipped/closed in v0.10.0; #41 is deferred (no direct Vault/OpenBao integration for now). #36 shipped in v0.12.0; audit sinks come before #39, because erasure reuses the deprovision path and holds need the audit tail. #45 goes last, and only once a real client sends it.
 
 | Issue | Item | Size | What it does, and why | Depends on |
 | --- | --- | --- | --- | --- |
