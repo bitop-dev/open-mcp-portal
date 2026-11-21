@@ -133,7 +133,9 @@ func (s *Service) serviceAssignment(ctx context.Context, req *registry.Requireme
 	if e != nil {
 		return uuid.Nil, e
 	}
-	if s.linkUsable(ctx, p) != nil {
+	if ok, e := s.linkOK(ctx, p); e != nil {
+		return uuid.Nil, e
+	} else if !ok {
 		return uuid.Nil, ErrProviderDisabled
 	}
 	if p.Kind != KindMCPServer {
@@ -199,6 +201,12 @@ func (s *Service) serviceIssueLocked(ctx context.Context, q *dbgen.Queries, id u
 		if e != nil || r.outcome != nil {
 			return e
 		}
+	}
+	if r.out.AccessToken == "" && narrowed {
+		// A narrowed call is never sent the stored token, which holds every
+		// scope the connection was granted (issue #107).
+		r.outcome = &UnavailableError{Provider: registry.ProviderOf(p), Code: "refresh_failed"}
+		return nil
 	}
 	if r.out.AccessToken == "" {
 		token, e := s.serviceOpen(c.ID, "access", c.AccessTokenCipher)
@@ -290,6 +298,12 @@ func (s *Service) serviceRefresh(ctx context.Context, q *dbgen.Queries, p dbgen.
 func (s *Service) serviceKeepNarrowed(ctx context.Context, q *dbgen.Queries, p dbgen.AuthProvider, c dbgen.ServiceConnection, tok tokenSet, rtct []byte, r *serviceIssue) error {
 	if e := q.RotateServiceConnectionRefresh(ctx, dbgen.RotateServiceConnectionRefreshParams{ID: c.ID, RefreshTokenCipher: rtct}); e != nil {
 		return e
+	}
+	if tok.Access == "" {
+		// Fail closed: nothing to send or cache, and the stored token is
+		// never sent instead (parseToken refuses this answer already).
+		r.outcome = &UnavailableError{Provider: registry.ProviderOf(p), Code: "invalid_response"}
+		return nil
 	}
 	if tok.HasScope && !Covers(tok.Scopes, r.req.Scopes) {
 		r.outcome = serviceRefused(ServiceConnectionNeedsReconsent)

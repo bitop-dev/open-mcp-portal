@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"strings"
 	"sync"
 	"time"
@@ -35,9 +36,23 @@ func Open(ctx context.Context, url string) (*pgxpool.Pool, error) {
 // OpenTraced is Open with a query tracer on every connection (nil: none).
 // Tests use it to count the statements a request makes.
 func OpenTraced(ctx context.Context, url string, tracer pgx.QueryTracer) (*pgxpool.Pool, error) {
+	return open(ctx, url, 0, tracer)
+}
+
+// open creates a pool of at most maxConns connections (0: as the URL's
+// pool_max_conns says, else pgx's default of max(4, CPUs)).
+func open(ctx context.Context, url string, maxConns int, tracer pgx.QueryTracer) (*pgxpool.Pool, error) {
 	cfg, err := pgxpool.ParseConfig(url)
 	if err != nil {
 		return nil, errors.New("DATABASE_URL: invalid PostgreSQL connection configuration")
+	}
+	if maxConns < 0 || maxConns > math.MaxInt32 {
+		return nil, fmt.Errorf("store: invalid pool size %d", maxConns)
+	}
+	if maxConns > 0 {
+		cfg.MaxConns = int32(maxConns)
+		cfg.MinConns = min(cfg.MinConns, cfg.MaxConns)
+		cfg.MinIdleConns = min(cfg.MinIdleConns, cfg.MaxConns)
 	}
 	cfg.ConnConfig.Tracer = tracer
 	if cfg.ConnConfig.RuntimeParams == nil {
@@ -60,12 +75,14 @@ func OpenTraced(ctx context.Context, url string, tracer pgx.QueryTracer) (*pgxpo
 // OpenWait is Open, retried with backoff until Postgres answers or wait
 // elapses. Pods often start before their database is ready (a first install,
 // a cluster restart); waiting here keeps the process from crash-looping into
-// long restart back-offs.
-func OpenWait(ctx context.Context, url string, wait time.Duration, log *slog.Logger) (*pgxpool.Pool, error) {
+// long restart back-offs. maxConns sizes the pool (0: as the URL's
+// pool_max_conns says, else pgx's default; the serving pool passes
+// config.DatabasePoolSize).
+func OpenWait(ctx context.Context, url string, maxConns int, wait time.Duration, log *slog.Logger) (*pgxpool.Pool, error) {
 	deadline := time.Now().Add(wait)
 	delay := time.Second
 	for attempt := 1; ; attempt++ {
-		pool, err := Open(ctx, url)
+		pool, err := open(ctx, url, maxConns, nil)
 		if err == nil {
 			if attempt > 1 {
 				log.Info("postgres reachable", "attempts", attempt)

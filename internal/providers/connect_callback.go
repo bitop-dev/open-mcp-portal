@@ -71,7 +71,9 @@ func (s *Service) Callback(ctx context.Context, in CallbackInput) (string, error
 	} else if err != nil {
 		return "", err
 	}
-	if result, refused := s.callbackRefusal(ctx, in, st, p); refused {
+	if result, refused, err := s.callbackRefusal(ctx, in, st, p); err != nil {
+		return "", err
+	} else if refused {
 		return done(p.Slug, result, nil), nil
 	}
 	verifier, ok := s.codeVerifier(st)
@@ -129,36 +131,39 @@ func (s *Service) Callback(ctx context.Context, in CallbackInput) (string, error
 // callbackRefusal checks the redirect against its state and provider before
 // the code is exchanged, in this order: the state's expiry, the browser
 // session and person, a server's own provider (mix-up, link), the provider's
-// own error, and the provider and code being usable.
-func (s *Service) callbackRefusal(ctx context.Context, in CallbackInput, st dbgen.ProviderAuthState, p dbgen.AuthProvider) (result string, refused bool) {
+// own error, and the provider and code being usable. An error is a failed
+// read (of a server's platform provider), not a refusal.
+func (s *Service) callbackRefusal(ctx context.Context, in CallbackInput, st dbgen.ProviderAuthState, p dbgen.AuthProvider) (result string, refused bool, err error) {
 	if !s.now().Before(st.ExpiresAt) {
-		return ResultExpired, true
+		return ResultExpired, true, nil
 	}
 	if in.SessionID == "" || auth.Digest(in.SessionID) != st.SessionDigest || in.User.ID != st.UserID || in.User.Status != auth.StatusActive {
-		return ResultWrongPerson, true
+		return ResultWrongPerson, true, nil
 	}
 	if p.Kind == KindMCPServer {
 		// Mix-up (RFC 9207): the response must come from the server's own
 		// issuer; and the server's resource must not have changed meanwhile.
 		switch {
 		case deref(st.Resource) != deref(p.Resource):
-			return ResultError, true
+			return ResultError, true, nil
 		case in.Iss != "" && in.Iss != deref(p.Issuer):
-			return ResultError, true
+			return ResultError, true, nil
 		case in.Iss == "" && p.IssParamSupported && in.Error == "":
-			return ResultError, true
+			return ResultError, true, nil
 		}
-		if s.linkUsable(ctx, p) != nil {
-			return ResultError, true
+		if ok, err := s.linkOK(ctx, p); err != nil {
+			return "", false, err
+		} else if !ok {
+			return ResultError, true, nil
 		}
 	}
 	if in.Error != "" {
-		return ResultDenied, true
+		return ResultDenied, true, nil
 	}
 	if !p.Enabled || in.Code == "" || len(in.Code) > 4096 {
-		return ResultError, true
+		return ResultError, true, nil
 	}
-	return "", false
+	return "", false, nil
 }
 
 // codeVerifier opens the state's PKCE code verifier ("": the state has none;

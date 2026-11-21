@@ -6,6 +6,11 @@ Notable changes to Open MCP Portal, one entry per release. Design notes for each
 The project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Before 1.0, minor releases may include
 breaking changes; the entry says how to adapt.
 
+## Unreleased
+
+- **Database pool size (#107).** `DATABASE_MAX_CONNS` sets each replica's serving connection pool (default `20`, 4 to 1000; an invalid value stops startup). It was pgx's default of max(4, CPUs), which a slow identity provider could exhaust: a provider token refresh holds a connection for up to 10 s. A `pool_max_conns` already in `DATABASE_URL` is kept when the setting is unset. Size Postgres `max_connections` for replicas × pool size ([docs/deploy.md](docs/deploy.md#scaling)).
+- **Provider credential fixes (#107).** A failed database read of a server's linked platform provider is now an internal error: before, it was reported as "the auth provider is turned off" for gateway calls and as a missing provider when connecting. A narrowed token refresh that answers with an empty access token is refused (`provider_unavailable`) and never cached, and a narrowed call is never sent the connection's stored, broader token instead.
+
 ## [0.15.2] - 2026-11-10
 
 - **Faster gateway requests.** A `tools/call` makes about a third fewer database round trips (47 to 33 on a team gateway, 40 to 31 on a platform gateway) and a `tools/list` about 40% fewer (13 to 8, 10 to 7), with every access check still read live. Evaluating a gateway's selection no longer re-projects each curated tool on every read: for 200 tools with 40 curated, 57 ms and 10.7 MB of allocations became 3.5 ms and 1.3 MB.

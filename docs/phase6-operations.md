@@ -249,8 +249,10 @@ usually shows in the pool panels too ([OMPDBPoolSaturated](#ompdbpoolsaturated))
 ### OMPDBPoolSaturated
 
 A replica has had over 90% of its PostgreSQL connections in use for 10 minutes. Look for slow queries or a database
-that is not answering (Platform › PostgreSQL pool: acquires that had to wait). Fix the cause before raising the pool;
-the pool size is the connection string's `pool_max_conns`.
+that is not answering (Platform › PostgreSQL pool: acquires that had to wait), or an identity provider that is slow to
+answer token refreshes (each holds a connection for up to 10 s; `omp_provider_token_refresh_total` and the logs). Fix
+the cause before raising the pool; the pool size is `DATABASE_MAX_CONNS` (default 20; unset, a `pool_max_conns` in
+`DATABASE_URL` is kept).
 
 ### OMPUpstreamErrorRatioHigh
 
