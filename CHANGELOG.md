@@ -9,6 +9,7 @@ breaking changes; the entry says how to adapt.
 ## [Unreleased]
 
 - **Security:** built with Go 1.26.11, which fixes GO-2026-6859 in `net/http` (the portal's code reaches it; 0.15.2 and earlier were built with Go 1.26.10). Dependency updates: pgx 5.12.0, go-jose 4.1.9, goose 3.30.0, kin-openapi 0.153.0, `golang.org/x/oauth2` 0.38.0, `golang.org/x/text` 0.44.0, and the web build and test tools.
+- **Retention purges no longer read the whole call log.** A call-metadata or captured-payload purge batch that found fewer rows than it asked for read every call or payload, on every retention pass (0.4 to 1.4 s at 300,000 rows on a test server; under 1 ms now). Each purge now bounds its scan by the shortest period any row can have, the platform period or the shortest team override, so the same rows are deleted, oldest first. Migration `00066` restates `omp_purge_mcp_calls` with the same signature, owner, grants and security settings, and adds an index on `mcp_call_payloads (occurred_at)`, built concurrently. The previous release runs unchanged against the new schema (#106).
 
 ## [0.15.2] - 2026-11-10
 

@@ -94,17 +94,27 @@ RETURNING *;
 -- name: PurgeMCPCallPayloads :execrows
 -- One batch of captured payloads older than their period: the shortest of
 -- the captured_payloads periods of the teams involved (the gateway's and
--- the server's, while they exist), else the platform period.
-WITH doomed AS (
+-- the server's, while they exist), else the platform period. The floor is
+-- the cutoff of the shortest period any row can have, so the occurred_at
+-- index bounds the scan and the same rows are deleted (oldest first). An
+-- override that is not a plain integer, or one large enough to overflow the
+-- date, drops the floor: the per-row cutoff alone then decides, as before.
+WITH floor AS (
+    SELECT CASE WHEN bool_and(o IS NULL OR o ~ '^-?[0-9]{1,6}$') IS NOT FALSE AND @platform_days::int BETWEEN -999999 AND 999999
+        THEN now() - make_interval(days => LEAST(@platform_days::int, min(CASE WHEN o ~ '^-?[0-9]{1,6}$' THEN o::int END)))
+        ELSE 'infinity'::timestamptz END AS cutoff
+    FROM (SELECT t.retention_overrides ->> 'captured_payloads' AS o FROM teams t) overrides
+), doomed AS (
     SELECT p.call_id
     FROM mcp_call_payloads p
     LEFT JOIN teams gt ON gt.id = p.gateway_team_id
     LEFT JOIN teams st ON st.id = p.server_team_id
-    WHERE p.occurred_at < now() - make_interval(days => COALESCE(LEAST(
+    WHERE p.occurred_at < (SELECT cutoff FROM floor)
+      AND p.occurred_at < now() - make_interval(days => COALESCE(LEAST(
         CASE WHEN gt.id IS NOT NULL THEN COALESCE((gt.retention_overrides ->> 'captured_payloads')::int, @platform_days::int) END,
         CASE WHEN st.id IS NOT NULL THEN COALESCE((st.retention_overrides ->> 'captured_payloads')::int, @platform_days::int) END),
         @platform_days::int))
-    ORDER BY p.call_id
+    ORDER BY p.occurred_at, p.call_id
     LIMIT @batch_size
     FOR UPDATE OF p SKIP LOCKED
 )
