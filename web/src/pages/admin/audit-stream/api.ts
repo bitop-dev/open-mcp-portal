@@ -11,7 +11,10 @@ export type Sink = {
   url_hint: string; cursor_seq: number; state: string; lag: number;
   last_error_class: string; consecutive_failures: number; held_oversized_seq: number | null;
   last_ok_at: string | null;
+  /** Delivery result of the held oversized envelope; null until attempted, absent from older replicas. */
+  held_notice?: HeldNotice | null;
 };
+export type HeldNotice = { delivered_at: string | null; failed_at: string | null; failure_class: string | null };
 export type Consumer = { name: string; profile: "summary" | "full"; required: boolean; acked_seq: number; lag: number };
 export type Status = {
   /** AUDIT_STREAM_ENABLED on the replica that answered (each replica has its own configuration). */

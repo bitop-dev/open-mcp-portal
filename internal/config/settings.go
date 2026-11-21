@@ -135,6 +135,7 @@ var settings = []setting{
 	{key: "DATABASE_MIGRATE_URL", secret: true, apply: str(func(c *Config) *string { return &c.DatabaseMigrateURL })},
 	{key: "DB_RUNTIME_ROLE", apply: func(c *Config, v string) error { c.DBRuntimeRole = v; return nil }},
 	{key: "DB_REQUIRE_SPLIT_ROLES", apply: boolean(func(c *Config) *bool { return &c.DBRequireSplitRoles })},
+	{key: "DATABASE_MAX_CONNS", apply: integer(func(c *Config) *int { return &c.DatabaseMaxConns }, 4, 1000)},
 	{key: "MIGRATE_ON_START", apply: boolean(func(c *Config) *bool { return &c.MigrateOnStart })},
 	{key: "INSTANCE_NAME", apply: func(c *Config, v string) error {
 		c.Instance.Name = cmp.Or(strings.TrimSpace(v), DefaultInstanceName)

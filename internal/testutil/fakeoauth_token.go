@@ -102,12 +102,7 @@ func (f *FakeOAuth) token(w http.ResponseWriter, r *http.Request) {
 		delay, failMode := f.RefreshDelay, f.FailRefresh
 		f.mu.Unlock()
 		time.Sleep(delay)
-		switch failMode {
-		case "invalid_grant", "invalid_scope":
-			f.fail(w, http.StatusBadRequest, failMode)
-			return
-		case "unavailable":
-			http.Error(w, "upstream down", http.StatusServiceUnavailable)
+		if f.failRefresh(w, failMode) {
 			return
 		}
 		f.mu.Lock()
@@ -150,6 +145,22 @@ func (f *FakeOAuth) token(w http.ResponseWriter, r *http.Request) {
 	}
 	g := fakeGrant{scopes: scopes, resource: resource, clientID: clientID}
 	f.issue(w, r, g, g)
+}
+
+// failRefresh answers a refresh as FailRefresh says; false: it works.
+func (f *FakeOAuth) failRefresh(w http.ResponseWriter, mode string) bool {
+	switch mode {
+	case "invalid_grant", "invalid_scope":
+		f.fail(w, http.StatusBadRequest, mode)
+	case "unavailable":
+		http.Error(w, "upstream down", http.StatusServiceUnavailable)
+	case "empty_access":
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"access_token":"","token_type":"bearer","expires_in":3600}`))
+	default:
+		return false
+	}
+	return true
 }
 
 // issue answers with a new access token for g (and a refresh token for rg,

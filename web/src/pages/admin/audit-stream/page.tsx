@@ -14,6 +14,7 @@ import { getStatus, sinkAction, statusKey, verificationDocs, type Action, type S
 import { SinkForm } from "./form";
 import { StreamStatus } from "./status";
 import { Consumers } from "./consumers";
+import { HeldOversized } from "./held";
 import s from "../../shared.module.css";
 
 const actionCopy = {
@@ -73,7 +74,7 @@ export function AdminAuditStreamPage() {
                 : sink.enabled
                   ? "Holding — retention waits for this cursor."
                   : "Holding while disabled — disabling delivery does not release retention."}</Td>
-              <Td>{sink.held_oversized_seq ?? "None"}</Td>
+              <Td><HeldOversized sink={sink} /></Td>
               {canEdit && <Td><Inline gap={2}>
                 <Button size="sm" onClick={() => setForm(sink)}>Edit</Button>
                 <Button size="sm" onClick={() => choose(sink, "test")}>Test</Button>

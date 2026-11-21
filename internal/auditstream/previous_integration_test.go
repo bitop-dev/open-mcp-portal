@@ -34,7 +34,7 @@ func TestPreviousImageCurrentSchemas(t *testing.T) {
 		t.Skip("set OMP_TEST_PREVIOUS_BINARY to the previous image executable")
 	}
 	t.Setenv("OMP_TEST_SPLIT_ROLES", "1")
-	for _, version := range []int64{58, 59, 60, 61, 62, 63, 64} {
+	for _, version := range []int64{58, 59, 60, 61, 62, 63, 64, 67} {
 		t.Run(fmt.Sprint(version), func(t *testing.T) {
 			p, _ := testutil.NewDBWithMigration(t, func(ctx context.Context, owner *pgxpool.Pool, role string) error {
 				db := stdlib.OpenDBFromPool(owner)
@@ -54,7 +54,7 @@ func TestPreviousImageCurrentSchemas(t *testing.T) {
 				return store.ReconcileRuntimeGrants(ctx, conn.Conn(), role)
 			})
 			owner := testutil.OwnerPool(t, p)
-			if version == 64 {
+			if version >= 64 {
 				exec(t, p, createSinkSQL, uuid.New(), true)
 				exec(t, p, `INSERT INTO public.audit_log(actor_kind,action,target_type,occurred_at) VALUES('system','sink.cap.fixture','fixture',now()-interval '4000 days')`)
 			}
@@ -172,7 +172,7 @@ func TestPreviousImageCurrentSchemas(t *testing.T) {
 					_ = cmd.Wait()
 					t.Fatal("previous retention loop did not complete successfully")
 				}
-				if version == 64 && count(t, p, `SELECT count(*) FROM public.audit_log WHERE action='sink.cap.fixture'`) != 1 {
+				if version >= 64 && count(t, p, `SELECT count(*) FROM public.audit_log WHERE action='sink.cap.fixture'`) != 1 {
 					t.Fatal("old retention bypassed sink cap")
 				}
 				if count(t, p, `SELECT count(*) FROM public.audit_log WHERE action='old.fixture'`) != 1 {
