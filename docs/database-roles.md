@@ -27,6 +27,8 @@ the caller's settings on return or error; the migration preserves owners and ACL
 PUBLIC EXECUTE is revoked in the migration transaction. Functions and protected
 tables must have the same owner: running a superuser migration over somebody
 else's tables must fail rather than silently create a different definer owner.
+Migration 00066 restates `omp_purge_mcp_calls` with a scan floor (#106): the same
+rows, owner, ACL and settings, checked in the same statement as the restatement.
 
 Audit retention has a 30-day floor; call metadata has the existing **1-day**
 floor, not 30 days. Effective call retention is the shortest of existing gateway
