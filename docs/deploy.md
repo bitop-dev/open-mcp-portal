@@ -678,7 +678,7 @@ must start with `omp-smoke`), `SMOKE_NODE_IMAGE`.
     so it can be 1 on several replicas at once, and 0 on all of them only when nothing is running the loop).
   - Session cleanup and the deletion of old rate limit windows run on every replica. Their deletes are idempotent.
 - Each replica holds a pgx connection pool of `DATABASE_MAX_CONNS` connections (default 20). Size Postgres
-  `max_connections` (or a pooler) for replicas × pool size, plus the migration Job and `doctor`. A provider token
+  `max_connections` (or a pooler) for the serving and surge replicas, migration init containers, and `doctor`. A provider token
   refresh holds one connection, under the connection's row lock, for as long as the identity provider takes to answer
   (up to 10 s), so a slow provider and a burst of refreshes can take several at once: raise the pool if
   `omp_db_pool_acquired_connections` stays near `omp_db_pool_max_connections` while providers are slow. Releasing the

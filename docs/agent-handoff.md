@@ -1,6 +1,15 @@
-# Agent handoff: v0.15.2 released 2026-11-10; batch complete
+# Agent handoff: v0.15.3 released 2026-11-21
 
-**Idle.** v0.15.2 (a hardening pass with no behaviour change: a faster gateway request path, a lighter web app, indexed admin queries, no Go file over 600 lines; migration 65, indexes only) is published and verified; see [release notes](releases/v0.15.2.md). `make lint` now also runs staticcheck and `scripts/check-go-quality.py` (file size and function complexity), and `TestMCPQueryBudget` pins the database statements per gateway request: change its numbers only on purpose. Before it, v0.15.1 shipped signed audit checkpoints and audit webhook sinks (#38 slice 2, off until enabled; migrations 63–64). v0.15.0 was tagged but never published (image scan, CVE-2026-78661); tags are immutable, so it is listed as unpublished in `scripts/previous-release.sh`. Nothing is in progress; follow-ups are in [status](status.md) "Current batch". Parked: `parked/terraform-provider`, `parked/keyprovider-transit` (#41). v1.0.0 remains the owner's decision.
+[v0.15.3](releases/v0.15.3.md) is published and verified at `e859260`. It includes the Go security
+rebuild, configurable database pool, provider credential fixes, faster call-log retention and the durable
+audit hold marker. Migrations 66 and 67 shipped. #106 and #93 are closed. #107 remains open.
+The new image is `ghcr.io/bitop-dev/open-mcp-portal`. Images through v0.15.2 use
+`ghcr.io/ncecere/open-mcp-portal`. See [status](status.md) for evidence and next work.
+Parked: `parked/terraform-provider` and `parked/keyprovider-transit` (#41). v1.0.0 remains the owner's decision.
+
+**Prior releases:** v0.15.2 shipped performance and maintainability improvements (migration 65).
+v0.15.1 shipped signed audit checkpoints and webhook sinks (migrations 63–64). v0.15.0 was tagged
+but never published after its image scan failed. Keep all release tags immutable.
 
 **Previous release:** [v0.13.1](releases/v0.13.1.md) (refreshed Go builder image, OIDC snapshot regression test; no code or schema change). Before it, [v0.13.0](releases/v0.13.0.md): catalog search (#49 slice), list columns that follow resizing, unwired #38/#70 groundwork, dependency updates, no migrations. Source `957d922d8ef9be114abc9a97dfbf5f22cc13b47c`, annotated tag `b850a2415c46a6fe6bb0c7902ce77a4c05b307bd`, image index `sha256:29259a050743d6e34eb0ceefd8e1f925da140277bc07e4877add500a1ba5e2eb`. Before it, [v0.12.0](releases/v0.12.0.md) shipped SCIM 2.0 provisioning (#36): source `bf5660d`, image index `sha256:be6969216aa7972d333c6ad9cae6de8eaa875a38c3fb1153f63c2e0deb4072ef`.
 

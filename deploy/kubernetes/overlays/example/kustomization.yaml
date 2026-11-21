@@ -32,7 +32,7 @@ resources:
 images:
   - name: ghcr.io/bitop-dev/open-mcp-portal
     newTag: v0.15.3
-    digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    digest: sha256:bae00dfda49eec8ed3dc0625b8276f677259d763da9f2904fd1ab8fab3212afa
 
 configMapGenerator:
   - name: open-mcp-portal-config

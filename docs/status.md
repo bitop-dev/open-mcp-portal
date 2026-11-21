@@ -1,25 +1,25 @@
 # Status and handoff
 
-Last updated: 2026-11-10. Open MCP Portal: **[v0.15.2](releases/v0.15.2.md) is the latest release, published and verified** (a hardening pass with no behaviour change: fewer database round trips per gateway request, a gzipped and smaller web app, indexed admin queries, size and complexity guards; migration `00065`, indexes only). Source `5eda51f`, tag `a4f54ff`, image index `sha256:e30bef6f56de186a39431ecde67a35dc155d5c33e597918a47a3a0644a8c2c28`, pinned in the example overlay. Previous published release: [v0.15.1](releases/v0.15.1.md) (`sha256:40b8bf0d…`; signed audit checkpoints and audit webhook sinks, #38 slice 2, off until enabled; migrations `00063`–`00064`). **v0.15.0 was tagged (`23acf3e`) but never published**: its image scan failed on CVE-2026-78661; it is listed in `scripts/previous-release.sh` as unpublished. v1.0.0 remains the owner's decision. A fresh agent should read [agent-handoff.md](agent-handoff.md).
+Last updated: 2026-11-21. Open MCP Portal **[v0.15.3](releases/v0.15.3.md) is published and verified**. It updates Go to 1.26.11, adds `DATABASE_MAX_CONNS`, fixes provider credential errors and retention query performance, and sends held audit envelopes once. Migrations `00066` and `00067` are expand-only. The tag points to source `e859260`; the verified image is `ghcr.io/bitop-dev/open-mcp-portal@sha256:bae00dfda49eec8ed3dc0625b8276f677259d763da9f2904fd1ab8fab3212afa`. Images through [v0.15.2](releases/v0.15.2.md) remain at `ghcr.io/ncecere/open-mcp-portal`. **v0.15.0 was tagged but never published** after its image scan failed. v1.0.0 remains the owner's decision. A fresh agent should read [agent-handoff.md](agent-handoff.md).
 (release notes: [releases/v0.10.0.md](releases/v0.10.0.md), [v0.9.0](releases/v0.9.0.md), [v0.8.0](releases/v0.8.0.md); earlier: [v0.7.0](releases/v0.7.0.md), [v0.6.0](releases/v0.6.0.md), [v0.5.1](releases/v0.5.1.md), [v0.5.0](releases/v0.5.0.md), [v0.4.0](releases/v0.4.0.md), [v0.3.3](releases/v0.3.3.md), [v0.3.2](releases/v0.3.2.md), [v0.3.1](releases/v0.3.1.md), [v0.3.0](releases/v0.3.0.md), [v0.2.2](releases/v0.2.2.md), [v0.2.1](releases/v0.2.1.md), [v0.2.0](releases/v0.2.0.md), the first release [v0.1.0](releases/v0.1.0.md)).
 
-## Current batch: complete (v0.15.2, 2026-11-10)
+## Current batch: v0.15.3 maintenance released (2026-11-21)
 
-v0.15.2 is the hardening pass ("no hell files"): hot-path database round trips, web bundle and static serving, slow admin queries, file and function splits, and the guards that keep them (`TestMCPQueryBudget`, `scripts/check-go-quality.py`, staticcheck in `make lint`, `npm run report:bundle`). Nothing is in progress.
+PRs #114 and #115 shipped the maintenance changes. #106 (call-log purges) and #93 (held audit envelopes) are closed. #107 remains open for redesigning the provider refresh lifetime. Release PR #123 moved publication to the `bitop-dev` container namespace. See the [release evidence](releases/v0.15.3.md#evidence) for validation and publication.
 
-Follow-ups, none blocking:
-- #105: decide whether to reuse upstream connections between MCP calls (the largest remaining latency win; a security design decision).
-- #106: the call-log purge scans the call log on a partial batch.
-- #107: provider token refresh holds a pooled connection during the outbound call.
-- The 23 functions in `scripts/go-complexity-allow.txt` (JSON Schema validation, the definition scanner, approvals); the list only shrinks.
-- #93: a durable sent marker for held oversized rows.
-- #94: manual accessibility and screen-reader review of dialogs.
-- #72: the 8× allocation bound, call-path equivalence, and a hosted corpus run.
+Follow-ups:
+
+- #119: surface the authorization server's registration error.
+- #105: decide whether to reuse upstream connections between MCP calls.
+- #116–#118: narrowed-token retry correctness, retention query plans, and load-sensitive tests.
+- #120–#122: audit retention, missing sink notification events, and audit stream operator docs.
+- #94: manual accessibility and screen-reader review of audit stream dialogs.
+- #72: allocation bound, call-path equivalence, and a hosted scanner corpus run.
 - #38 slices 3 (syslog TLS and OTLP) and 4 (bulk exports).
 - #42 Helm when a pilot needs it.
 - Real-world evidence #13–#20 (owner).
 
-Decisions 95+ and migrations 66+ are unallocated; the main thread allocates them.
+Decisions 95+ and migrations 68+ are unallocated. The main thread allocates them.
 
 v0.15.1 (2026-11-06) completed the batch before it: the cleanup batch (#83/#85 closed, #72/#73 evidence) and #38 slice 2 (signed checkpoints, webhook sinks, Admin › Audit stream). #96 (the flaky quota-window test) was fixed afterwards.
 
@@ -919,9 +919,9 @@ server allow-list).
 
 ### Resume on another machine
 
-- Clone `git@github.com:ncecere/open-mcp-portal.git`, check out `main` and fetch tags. All required source,
+- Clone `git@github.com:bitop-dev/open-mcp-portal.git`, check out `main` and fetch tags. All required source,
   migrations and generated code for the released baseline are on the remote. The latest immutable shipped source is
-  `v0.13.0` (catalog search #49 slice and #38/#70 groundwork; those issues stay open for their remaining scope). The Terraform provider is a separate project and direct Vault/OpenBao integration (#41) is deferred (owner decisions, 2026-11-01); their exploratory branches are kept for reference only.
+  `v0.15.3`. The Terraform provider is a separate project and direct Vault/OpenBao integration (#41) is deferred (owner decisions, 2026-11-01); their exploratory branches are kept for reference only.
 - Read this release section, `AGENTS.md`, [CONTRIBUTING.md](../CONTRIBUTING.md) and
   [implementation order](implementation-order.md). Do not restart already shipped features.
 - Install Go 1.26.10+, Node 22+, Docker, Python 3 and sqlc 1.31.1; run `npm ci` in `web/`.
@@ -939,8 +939,7 @@ blind restart/seed of an existing one. The historical dev-database migration hel
 
 ## Next steps
 
-0. **Resumed 2026-11-05:** follow "Current batch" at the top of this file (#72 worker lane, #38 design on the
-   main thread, owner-side real-world checks). The items below are historical.
+0. Follow "Current batch" at the top of this file. The items below are historical.
 1. v0.4.0 is published and verified; #26/#29/#30/#44/#68 are closed with acceptance evidence. Its follow-up
    documentation/image-pin CI and both smoke jobs also passed. Keep the immutable release tag/digest intact.
 2. **Historical machine-transfer stop point completed:** #31 shipped in verified v0.5.0 and is closed. The
