@@ -33,7 +33,7 @@ Follow-ups, none blocking:
 - **Flaky tests:** [#83](https://github.com/ncecere/open-mcp-portal/issues/83) (approvals detail 409 under contention) and [#85](https://github.com/ncecere/open-mcp-portal/issues/85) (allow-server rate limit across a window boundary).
 - **Real-world evidence:** #13–#20, which need the owner (#14/#15 clients, #17 token refresh, #20 pilot team).
 
-The development machine has no development instance or `omp` database. Owned disposable test PostgreSQL containers are `omp-test-pg-main` (55452), `omp-test-pg-w72` (55453) and `omp-test-pg-w38` (55454), all tmpfs-backed. Go 1.26.10, sqlc 1.31.1 and cosign v3.1.4 are installed under `~/.local`. `/tmp` is a shared 7.5 GB tmpfs: set `GOTMPDIR` to a directory on disk for full suites.
+The development machine (`bitop-coder-00`, set up again on 2026-11-21) has no development instance or `omp` database. Its owned disposable test PostgreSQL container is `omp-test-pg-main` (55452, tmpfs-backed); set `OMP_TEST_DATABASE_URL` to it, because the Makefile default (55442) is the compose Postgres, which is not running. Go and sqlc 1.31.1 are installed under `~/.local`; cosign is not. A linked worker machine, `bitop-coder-01`, has its own checkout. `/tmp` is a shared 7.5 GB tmpfs: set `GOTMPDIR` to a directory on disk for full suites.
 
 ### History: v0.12.0 SCIM batch notes (shipped)
 

@@ -156,8 +156,7 @@ backlog work as well as publication evidence and the verified example image dige
 
 ## What remains separate
 
-There are 26 open issues after #32/#33/#35/#43/#52 and the four scanning follow-ups: 18 development and
-eight real-world verification issues.
+As of 2026-11-21 there are 24 open issues: 16 development and eight real-world verification issues.
 #13–#20 still require actual independent review/client/provider/channel/pilot evidence. Fake OAuth/MCP fixtures
 and agent reviews do not close those. Broader load, restore/ingress/OIDC deployment validation, wall-clock
 refresh/expiry and whole-product accessibility acceptance remain separate; no production deployment is implied.

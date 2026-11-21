@@ -6,6 +6,10 @@ Notable changes to Open MCP Portal, one entry per release. Design notes for each
 The project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Before 1.0, minor releases may include
 breaking changes; the entry says how to adapt.
 
+## [Unreleased]
+
+- **Security:** built with Go 1.26.11, which fixes GO-2026-6859 in `net/http` (the portal's code reaches it; 0.15.2 and earlier were built with Go 1.26.10). Dependency updates: pgx 5.12.0, go-jose 4.1.9, goose 3.30.0, kin-openapi 0.153.0, `golang.org/x/oauth2` 0.38.0, `golang.org/x/text` 0.44.0, and the web build and test tools.
+
 ## [0.15.2] - 2026-11-10
 
 - **Faster gateway requests.** A `tools/call` makes about a third fewer database round trips (47 to 33 on a team gateway, 40 to 31 on a platform gateway) and a `tools/list` about 40% fewer (13 to 8, 10 to 7), with every access check still read live. Evaluating a gateway's selection no longer re-projects each curated tool on every read: for 200 tools with 40 curated, 57 ms and 10.7 MB of allocations became 3.5 ms and 1.3 MB.
